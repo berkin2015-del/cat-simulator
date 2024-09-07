@@ -17,8 +17,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "cdk": "cdk",
-    "deploy": "npx ts-node --prefer-ts-exts scripts/deploy.ts"
+    "cdk": "cdk"
   },
   "bin": {
     "app": "cdk/app.js"
