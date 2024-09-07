@@ -6,14 +6,22 @@
     "@types/node": "^16.18.108",
     "@types/react": "^18.3.5",
     "@types/react-dom": "^18.3.0",
+    "aws-cdk-lib": "2.155.0",
+    "constructs": "^10.0.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-scripts": "5.0.1",
+    "source-map-support": "^0.5.21",
     "typescript": "^4.9.5"
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build"
+    "build": "react-scripts build",
+    "cdk": "cdk",
+    "deploy": "npx ts-node --prefer-ts-exts scripts/deploy.ts"
+  },
+  "bin": {
+    "app": "cdk/app.js"
   },
   "eslintConfig": {
     "extends": [
@@ -31,5 +39,12 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "@types/node": "20.14.9",
+    "aws-cdk": "2.155.0",
+    "ts-node": "^10.9.2",
+    "typescript": "~5.5.3"
   }
 }
