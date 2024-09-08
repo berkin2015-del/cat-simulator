@@ -22,7 +22,7 @@ export const PawImage = () => {
         } else {
             setPawImageClasses(pawImageClasses.filter((i) => { return i !== pawSpinClassName }))
         }
-    }, [pawImageSpinning, pawImageClasses]);
+    }, [pawImageSpinning]);
 
     return (<img
         alt="paw"
