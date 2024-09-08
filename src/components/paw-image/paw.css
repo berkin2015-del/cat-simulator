@@ -1,6 +1,6 @@
 .cat-paw {
-    height: 40vmin;
-    width: 40vmin;
+    height: 20vmin;
+    width: 20vmin;
     object-fit: contain;
 }
 
@@ -16,6 +16,4 @@
 
 .cat-paw-spin {
     animation: cat-paw-spin infinite 20s linear;
-    animation-fill-mode: forwards;
-    writing-mode: vertical-rl;
 }

@@ -12,7 +12,6 @@ root.render(
     <div style={{ textAlign: 'center' }}>
       <h1 className='select-none'>Cat Messenger</h1>
       <Recorder />
-      <p>click, spin, click again, stop spin.</p>
     </div>
   </React.StrictMode>
 );

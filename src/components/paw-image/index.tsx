@@ -2,19 +2,31 @@ import { useEffect, useState } from 'react';
 
 import './paw.css';
 
-export const PawImage = () => {
+interface PawImageProps {
+    ignoreClick?: boolean,
+    spinning?: boolean
+};
+
+export const PawImage = (props: PawImageProps) => {
     const startingPawImageClasses = ['cat-paw', 'select-none']
     const pawSpinClassName = 'cat-paw-spin'
 
     const [pawImageClasses, setPawImageClasses] = useState(startingPawImageClasses);
-    const [pawImageSpinning, setPawImageSpinning] = useState(false);
+    const [pawImageSpinning, setPawImageSpinning] = useState(props.spinning);
 
     const handlePawImgClick = () => {
-        console.log(`clicked paw\nspin set to ${!pawImageSpinning}`);
+        if (props.ignoreClick) {
+            return
+        }
         setPawImageSpinning(!pawImageSpinning);
     };
 
     useEffect(() => {
+        setPawImageSpinning(props.spinning);
+    }, [props.spinning]);
+
+    useEffect(() => {
+        console.log(`PawImage: ${pawImageSpinning ? '' : 'not '}spinning`);
         if (pawImageSpinning) {
             if (!pawImageClasses.includes(pawSpinClassName)) {
                 setPawImageClasses([...pawImageClasses, pawSpinClassName])
