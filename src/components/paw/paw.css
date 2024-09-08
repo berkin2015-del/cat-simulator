@@ -4,7 +4,8 @@
 
 .cat-paw {
     height: 40vmin;
-    pointer-events: none;
+    width: 40vmin;
+    object-fit: contain;
 }
 
 @keyframes cat-paw-spin {
@@ -20,4 +21,5 @@
 .cat-paw-spin {
     animation: cat-paw-spin infinite 20s linear;
     animation-fill-mode: forwards;
+    writing-mode: vertical-rl;
 }
