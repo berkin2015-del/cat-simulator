@@ -1,0 +1,23 @@
+.cat-box {
+    text-align: center;
+}
+
+.cat-paw {
+    height: 40vmin;
+    pointer-events: none;
+}
+
+@keyframes cat-paw-spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.cat-paw-spin {
+    animation: cat-paw-spin infinite 20s linear;
+    animation-fill-mode: forwards;
+}
