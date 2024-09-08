@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { PawImage } from "../paw-image"
+import { PawImage } from "../components/paw-image"
 
 export const Recorder = () => {
     const [recorderIsWriting, setRecorderIsWriting] = useState(false);
@@ -21,7 +21,7 @@ export const Recorder = () => {
     };
 
     return (
-        <div>
+        <div className="place-h-center">
             {/* Image Click Rapper since PawImage cannot pass click */}
             <span onClick={handlePawClick}>
                 <PawImage

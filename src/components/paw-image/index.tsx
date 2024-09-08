@@ -17,7 +17,7 @@ export const PawImage = (props: PawImageProps) => {
     const handlePawImgClick = () => {
         if (props.ignoreClick) {
             return
-        }
+        };
         setPawImageSpinning(!pawImageSpinning);
     };
 

@@ -1,17 +1,24 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './index.css';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
-import { Recorder } from './components/recorder';
+import { Recorder } from './pages/recorder';
+import { Settings } from './pages/settings';
+
+
+import './index.css';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 root.render(
   <React.StrictMode>
-    <div style={{ textAlign: 'center' }}>
-      <h1 className='select-none'>Cat Messenger</h1>
-      <Recorder />
-    </div>
+    <h1 className='select-none place-h-center'>Cat Messenger</h1>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Recorder />} />
+        <Route path="settings" element={<Settings />} />
+      </Routes>
+    </BrowserRouter>
   </React.StrictMode>
 );
