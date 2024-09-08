@@ -1,7 +1,7 @@
-import { Console } from "console";
+const localStorageApiArg = 'api_url';
 
 export const getApiUrl = () => {
-    let apiUrlInLocalStorage = localStorage.getItem('api_url');
+    let apiUrlInLocalStorage = localStorage.getItem(localStorageApiArg);
     console.log(`Api: get from localstorage ${apiUrlInLocalStorage}`);
     return apiUrlInLocalStorage ? apiUrlInLocalStorage : '';
 };
@@ -9,5 +9,5 @@ export const getApiUrl = () => {
 export const setApiUrl = (url: string) => {
     let setUrl = url ? url : '';
     console.log(`Api: get from localstorage ${setUrl}`);
-    localStorage.setItem('api_url', setUrl);
+    localStorage.setItem(localStorageApiArg, setUrl);
 };
