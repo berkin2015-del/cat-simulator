@@ -39,7 +39,7 @@ new cdk.CfnOutput(catSimStack, 'Bucket Website Url', {
 const apiLambdaFunction = new cdk.aws_lambda.Function(catSimStack, 'Api Function', {
     runtime: cdk.aws_lambda.Runtime.NODEJS_20_X,
     code: cdk.aws_lambda.Code.fromAsset(path.join(__dirname, './api-lambda')),
-    handler: 'hello.handler',
+    handler: 'index.handler',
 });
 
 new cdk.aws_logs.LogGroup(catSimStack, 'Api LogGroup', {
