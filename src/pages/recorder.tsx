@@ -5,6 +5,7 @@ import { fetchApi } from "../components/api";
 import { PawImage } from "../components/paw-image";
 import { StatusSending } from "../components/api/status";
 import { playAudio } from "../components/audio-processer";
+import * as settings from "../components/settings"
 
 export const Recorder = () => {
 
@@ -40,7 +41,7 @@ export const Recorder = () => {
         }, overideApiUrl);
         if (apiResponse === null) {
             console.error('Recorder: Error Fetching Api');
-            setApiStatus('Recorder: Error Fetching Api');
+            setApiStatus('Meow!!!');
             setWaitingApi(false);
             return;
         };
@@ -49,7 +50,7 @@ export const Recorder = () => {
             console.warn('Recorder: Api response has no message');
         };
         setWaitingApi(false);
-        let apiResponseMessage = apiResponse.message ? apiResponse.message : '';
+        let apiResponseMessage = apiResponse.message ? apiResponse.message : 'meow';
         setApiStatus(apiResponseMessage);
         if (apiResponse.hasOwnProperty('soundtracks')) {
             audioPlayer(apiResponse.soundtracks);
@@ -68,17 +69,15 @@ export const Recorder = () => {
         setFirstUse(false);
         setIsWriting(false);
         console.log('Recorder: Recived' + message)
-        if (localStorage.getItem('allow_empty_message') !== 'true') {
-            if (!message) {
-                console.warn(`Recorder: Empty Message exiting.`);
-                if (!apiStatus) {
-                    setFirstUse(true);
-                }
-                return;
-            };
+        if (!settings.allowEmptyMessage && !message) {
+            console.warn(`Recorder: Empty Message exiting.`);
+            if (!apiStatus) {
+                setFirstUse(true);
+            }
+            return;
         } else {
             console.warn('Recorder: Allowed Empty Message')
-        }
+        };
         await queryApi();
         setMessage('');
         return;
@@ -107,7 +106,9 @@ export const Recorder = () => {
                     </div>
                 </> :
                 <> {firstUse ? <p>click to start.</p> : null}</>}
-            {waitingApi ? <p><StatusSending /></p> : apiStatus ? <p>{apiStatus}</p> : null}
+            <div style={{ maxWidth: '400px', margin: '0 auto' }}>
+                {waitingApi ? <p><StatusSending /></p> : apiStatus ? <p>{apiStatus}</p> : null}
+            </div>
         </div>
     )
 }

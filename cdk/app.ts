@@ -115,6 +115,10 @@ const dist = new cdk.aws_cloudfront.Distribution(catSimStack, "Distribution for 
     ]
 });
 
-new cdk.CfnOutput(catSimStack, 'Cloudfront Url', {
+new cdk.CfnOutput(catSimStack, 'CloudfrontDistributionUrl', {
     value: `https://${dist.distributionDomainName}/`,
+});
+
+new cdk.CfnOutput(catSimStack, 'CloudfrontDistributionID', {
+    value: dist.distributionId,
 });

@@ -1,25 +1,6 @@
 import urlJoin from "url-join";
 
-const localStorageApiArg = 'api_url';
-
-export const getApiUrl = () => {
-    let apiUrlInLocalStorage = localStorage.getItem(localStorageApiArg);
-    console.log(`Api: Get from localstorage ${apiUrlInLocalStorage}`);
-    if (apiUrlInLocalStorage === null) {
-        console.log(`Api: Got null from localstorage\n setting to /api`);
-        localStorage.setItem(localStorageApiArg, '/api');
-        return '/api';
-    }
-    return apiUrlInLocalStorage ? apiUrlInLocalStorage : '';
-};
-
-export const setApiUrl = (url: string) => {
-    let setUrl = url ? url : '';
-    console.log(`Api: Set to localstorage ${setUrl}`);
-    localStorage.setItem(localStorageApiArg, setUrl);
-};
-
-export const apiUrl = getApiUrl();
+import { apiUrl } from '../settings'
 
 export const fetchApi = async (path: string, fetchProps?: RequestInit, overideApiUrl?: string) => {
     const fullUrl = urlJoin(overideApiUrl ? overideApiUrl : apiUrl, path);

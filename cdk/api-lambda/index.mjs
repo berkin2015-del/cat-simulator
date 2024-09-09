@@ -32,12 +32,12 @@ export const handler = async (event) => {
         };
 
         let message = requestBody.message;
-        // TODO: Impliment bedrock
         try {
             let response = await invokeBedrock(message);
             returnContent.body = JSON.stringify(response);
             return returnContent;
-        } catch {
+        } catch (error) {
+            console.error(error)
             returnContent.body = JSON.stringify({
                 message: 'Meow!',
                 soundtracks: ["meow_01"]
@@ -46,7 +46,7 @@ export const handler = async (event) => {
         };
 
     } catch (error) {
-        console.log(error);
+        console.error(error);
         returnContent.statusCode = 500;
         returnContent.body = JSON.stringify({ message: "Server Error" });
         return returnContent;
