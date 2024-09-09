@@ -32,7 +32,7 @@ The list of soundtracks available is as follows:
 "sad_meow_01": "sad meow, just after seeing/hearing/noticiing something sad",
 "sad_meow_02": "sad meow, feels sadder then sad_meow01 longer meow",
 "sad_meow_03": "sad meow, feels sadder then sad_meow02 longer meow",
-"purr01": "normal purr"
+"purr_01": "normal purr"
 ----
 
 The response sould be what you think or feel.
