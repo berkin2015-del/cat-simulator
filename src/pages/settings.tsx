@@ -37,6 +37,10 @@ export const Settings = () => {
 			</table>
 			<div style={{ marginTop: '2vh' }} />
 			<button onClick={() => { window.location.pathname = '/' }}>Go Back</button>
+			<p>* Expected url:
+				"https://123456789.execute-api.us-east-1.amazonaws.com/prod" or
+				"/api"
+			</p>
 		</div>
 	);
 };

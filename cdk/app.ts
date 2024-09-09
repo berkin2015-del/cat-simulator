@@ -53,6 +53,18 @@ const api = new cdk.aws_apigateway.LambdaRestApi(catSimStack, 'Api Gateway', {
     proxy: false,
 });
 
-const apiResource = api.root.addResource('api');
-const apiSendResource = apiResource.addResource('{proxy+}');
-apiSendResource.addMethod('ANY');
+const apiResource = api.root.addResource('api', {
+    defaultCorsPreflightOptions: {
+        allowOrigins: ['*'],
+        allowMethods: ['GET', 'POST', 'OPTIONS', 'PUT', 'DELETE'],
+        allowHeaders: ['Content-Type', 'X-Amz-Date', 'Authorization', 'X-Api-Key', 'X-Amz-Security-Token'],
+    },
+});
+const proxyResource = apiResource.addResource('{proxy+}', {
+    defaultCorsPreflightOptions: {
+        allowOrigins: ['*'],
+        allowMethods: ['GET', 'POST', 'OPTIONS', 'PUT', 'DELETE'],
+        allowHeaders: ['Content-Type', 'X-Amz-Date', 'Authorization', 'X-Api-Key', 'X-Amz-Security-Token'],
+    },
+});
+proxyResource.addMethod('ANY');
