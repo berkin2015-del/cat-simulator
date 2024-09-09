@@ -27,7 +27,7 @@ export const fetchApi = async (path: string, fetchProps?: RequestInit) => {
         };
         try {
             const apiResponseBody = await apiResponse.json();
-            console.log('API: Response: \n' + apiResponseBody);
+            console.log('API: Response: \n' + apiResponseBody.toString());
             return apiResponseBody;
         } catch (error) {
             console.error("API: Response Parse Error\n" + apiResponse.body)

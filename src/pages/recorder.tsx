@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 
 import { PawImage } from "../components/paw-image"
 import { fetchApi } from "../components/api"
+import { StatusSending } from "../components/api/status";
+import { FailoverStatusCode } from "aws-cdk-lib/aws-cloudfront";
 
 export const Recorder = () => {
 
@@ -9,9 +11,10 @@ export const Recorder = () => {
     const [message, setMessage] = useState("");
     const [apiStatus, setApiStatue] = useState('');
     const [firstUse, setFirstUse] = useState(true);
+    const [waitingApi, setWaitingApi] = useState(false);
 
     const queryApi = async () => {
-        setApiStatue('Loading...');
+        setWaitingApi(true);
         let apiResponse = await fetchApi('/api/chat', {
             method: 'POST',
             body: JSON.stringify({
@@ -21,15 +24,18 @@ export const Recorder = () => {
         if (apiResponse === null) {
             console.error('Recorder: Error Fetching Api');
             setApiStatue('Recorder: Error Fetching Api');
+            setWaitingApi(false);
             return;
         };
-        // Todo: handle api response
-        console.log('Recorder: Got Response' + apiResponse);
+        console.log('Recorder: Got Response' + apiResponse.toString());
         if (!apiResponse.hasOwnProperty('message')) {
             console.warn('Recorder: Api response has no message');
         };
         let apiResponseMessage = apiResponse.message ? apiResponse.message : '';
         setApiStatue('Got Message: ' + apiResponseMessage);
+        setWaitingApi(false);
+
+        // Todo: handle api response
         return;
     };
 
@@ -39,14 +45,15 @@ export const Recorder = () => {
             setIsWriting(true);
             return;
         };
-        setFirstUse(false);
         console.log("Recorder: Stopped Writing");
-        setApiStatue('');
+        setFirstUse(false);
         setIsWriting(false);
         console.log('Recorder: Recived' + message)
         if (!message) {
             console.warn(`Recorder: Empty Message exiting.`);
-            setFirstUse(true);
+            if (!apiStatus) {
+                setFirstUse(true);
+            }
             return;
         };
         await queryApi();
@@ -77,7 +84,7 @@ export const Recorder = () => {
                     </div>
                 </> :
                 <> {firstUse ? <p>click to record.</p> : null}</>}
-            {apiStatus ? (<p>{apiStatus}</p>) : null}
+            {waitingApi ? <p><StatusSending /></p> : apiStatus ? <p>{apiStatus}</p> : null}
         </div>
     )
 }
