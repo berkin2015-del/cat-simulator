@@ -1,4 +1,3 @@
-import { BedrockRuntimeClient, InvokeModelCommand } from "@aws-sdk/client-bedrock-runtime";
 
 export const handler = async (event) => {
     console.log(event)
@@ -34,6 +33,13 @@ export const handler = async (event) => {
         let message = requestBody.message;
         // TODO: Impliment bedrock
         returnContent.body = JSON.stringify({ message: message });
+
+
+
+
+
+
+
         return returnContent
 
     } catch (error) {

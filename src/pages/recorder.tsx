@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { PawImage } from "../components/paw-image"
 import { fetchApi } from "../components/api"
 import { StatusSending } from "../components/api/status";
-import { FailoverStatusCode } from "aws-cdk-lib/aws-cloudfront";
 
 export const Recorder = () => {
 
