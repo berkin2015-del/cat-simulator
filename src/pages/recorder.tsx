@@ -83,7 +83,7 @@ export const Recorder = () => {
                         />
                     </div>
                 </> :
-                <> {firstUse ? <p>click to record.</p> : null}</>}
+                <> {firstUse ? <p>click to start.</p> : null}</>}
             {waitingApi ? <p><StatusSending /></p> : apiStatus ? <p>{apiStatus}</p> : null}
         </div>
     )
