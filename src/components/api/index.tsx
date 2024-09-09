@@ -5,6 +5,11 @@ const localStorageApiArg = 'api_url';
 export const getApiUrl = () => {
     let apiUrlInLocalStorage = localStorage.getItem(localStorageApiArg);
     console.log(`Api: Get from localstorage ${apiUrlInLocalStorage}`);
+    if (apiUrlInLocalStorage === null) {
+        console.log(`Api: Got null from localstorage\n setting to /api`);
+        localStorage.setItem(localStorageApiArg, '/api');
+        return '/api';
+    }
     return apiUrlInLocalStorage ? apiUrlInLocalStorage : '';
 };
 

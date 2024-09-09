@@ -2,14 +2,24 @@ import { useEffect, useState } from "react";
 
 import { getApiUrl, setApiUrl } from "../components/api";
 
-
 export const Settings = () => {
 
-	const [settingsApiUrl, setSettingsApiUrl] = useState('');
+	const [apiUrlSet, setApiUrlSet] = useState('');
+	const [allowEmptyMessageSet, setAllowEmptyMessageSet] = useState(false);
 
 	useEffect(() => {
-		setSettingsApiUrl(getApiUrl());
+		setApiUrlSet(getApiUrl());
+		setAllowEmptyMessageSet(localStorage.getItem('allow_empty_message') === 'true');
 	}, [])
+
+	const settingApiUrl = () => {
+		console.log(`Settings: Set api to ${apiUrlSet}`);
+		setApiUrl(apiUrlSet);
+	};
+	const settingAllowEmptyMessage = () => {
+		console.log(`Settings: Allow Empty Message set to ${allowEmptyMessageSet}`);
+		localStorage.setItem('allow_empty_message', allowEmptyMessageSet ? 'true' : 'false');
+	};
 
 	return (
 		<div className="place-h-center">
@@ -19,26 +29,36 @@ export const Settings = () => {
 				</thead>
 				<tbody>
 					<tr>
-						<td>Apfi Url</td>
+						<td>Api Url</td>
+						<td><input onChange={(e) => { setApiUrlSet(e.target.value) }} value={apiUrlSet} /></td>
+						<td><button onClick={settingApiUrl}>set</button></td>
+					</tr>
+					<tr>
+						<td>Allow Empty Message</td>
 						<td>
 							<input
-								onChange={(e) => { setSettingsApiUrl(e.target.value) }}
-								value={settingsApiUrl}
-							/>
+								type="radio"
+								value={'true'}
+								name='AllowedEmptyMessage'
+								onChange={() => { setAllowEmptyMessageSet(true) }}
+								checked={allowEmptyMessageSet === true}
+							/> Allowed
+							<input
+								type="radio"
+								value={'false'}
+								name='AllowedEmptyMessage'
+								onChange={() => { setAllowEmptyMessageSet(false) }}
+								checked={allowEmptyMessageSet === false}
+							/> Denied
 						</td>
-						<td>
-							<button onClick={() => {
-								console.log(`Settings: Set api to ${settingsApiUrl}`);
-								setApiUrl(settingsApiUrl);
-							}}>set</button>
-						</td>
+						<td><button onClick={settingAllowEmptyMessage}>set</button></td>
 					</tr>
 				</tbody>
 			</table>
 			<div style={{ marginTop: '2vh' }} />
 			<button onClick={() => { window.location.pathname = '/' }}>Go Back</button>
 			<p>* Expected url:<br />
-				"https://123456789.execute-api.us-east-1.amazonaws.com/prod" or <br />
+				"https://123456789.execute-api.us-east-1.amazonaws.com/prod/api" or <br />
 				"/api"
 			</p>
 		</div>

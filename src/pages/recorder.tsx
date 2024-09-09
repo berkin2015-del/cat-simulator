@@ -32,7 +32,7 @@ export const Recorder = () => {
 
     const queryApi = async () => {
         setWaitingApi(true);
-        let apiResponse = await fetchApi('/api/chat', {
+        let apiResponse = await fetchApi('chat', {
             method: 'POST',
             body: JSON.stringify({
                 message: message,
@@ -68,13 +68,17 @@ export const Recorder = () => {
         setFirstUse(false);
         setIsWriting(false);
         console.log('Recorder: Recived' + message)
-        if (!message) {
-            console.warn(`Recorder: Empty Message exiting.`);
-            if (!apiStatus) {
-                setFirstUse(true);
-            }
-            return;
-        };
+        if (localStorage.getItem('allow_empty_message') !== 'true') {
+            if (!message) {
+                console.warn(`Recorder: Empty Message exiting.`);
+                if (!apiStatus) {
+                    setFirstUse(true);
+                }
+                return;
+            };
+        } else {
+            console.warn('Recorder: Allowed Empty Message')
+        }
         await queryApi();
         setMessage('');
         return;

@@ -3,19 +3,19 @@ import * as cdk from 'aws-cdk-lib';
 
 const app = new cdk.App();
 
-const catSimStack = new cdk.Stack(app, "Cat-Simulator-Stack", {});
+const catSimStack = new cdk.Stack(app, "Cat-Simulator", {});
 
 const websiteBucket = new cdk.aws_s3.Bucket(catSimStack, "Web Interface", {
     autoDeleteObjects: true,
     removalPolicy: cdk.RemovalPolicy.DESTROY,
-    blockPublicAccess: new cdk.aws_s3.BlockPublicAccess({
-        blockPublicAcls: false,
-        blockPublicPolicy: false,
-        ignorePublicAcls: false,
-        restrictPublicBuckets: false
-    }),
-    websiteErrorDocument: 'index.html',
-    websiteIndexDocument: 'index.html',
+    // blockPublicAccess: new cdk.aws_s3.BlockPublicAccess({
+    //     blockPublicAcls: false,
+    //     blockPublicPolicy: false,
+    //     ignorePublicAcls: false,
+    //     restrictPublicBuckets: false
+    // }),
+    // websiteErrorDocument: 'index.html',
+    // websiteIndexDocument: 'index.html',
 });
 
 const websiteBucketDeployment = new cdk.aws_s3_deployment.BucketDeployment(catSimStack, "Bucket interface deployment", {
@@ -25,16 +25,16 @@ const websiteBucketDeployment = new cdk.aws_s3_deployment.BucketDeployment(catSi
     extract: true,
 });
 
-websiteBucket.policy?.document!.addStatements(new cdk.aws_iam.PolicyStatement({
-    actions: ['s3:GetObject'],
-    effect: cdk.aws_iam.Effect.ALLOW,
-    resources: [`${websiteBucket.bucketArn}/*`],
-    principals: [new cdk.aws_iam.AnyPrincipal()],
-}));
+// websiteBucket.policy?.document!.addStatements(new cdk.aws_iam.PolicyStatement({
+//     actions: ['s3:GetObject'],
+//     effect: cdk.aws_iam.Effect.ALLOW,
+//     resources: [`${websiteBucket.bucketArn}/*`],
+//     principals: [new cdk.aws_iam.AnyPrincipal()],
+// }));
 
-new cdk.CfnOutput(catSimStack, 'Bucket Website Url', {
-    value: websiteBucket.bucketWebsiteUrl,
-});
+// new cdk.CfnOutput(catSimStack, 'Bucket Website Url', {
+//     value: websiteBucket.bucketWebsiteUrl,
+// });
 
 const apiLambdaFunction = new cdk.aws_lambda.Function(catSimStack, 'Api Function', {
     runtime: cdk.aws_lambda.Runtime.NODEJS_20_X,
@@ -79,3 +79,42 @@ const proxyResource = apiResource.addResource('{proxy+}', {
     },
 });
 proxyResource.addMethod('ANY');
+
+
+const dist = new cdk.aws_cloudfront.Distribution(catSimStack, "Distribution for Site", {
+    defaultRootObject: 'index.html',
+    defaultBehavior: {
+        origin: cdk.aws_cloudfront_origins.S3BucketOrigin.withOriginAccessControl(websiteBucket),
+        viewerProtocolPolicy: cdk.aws_cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        allowedMethods: cdk.aws_cloudfront.AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
+    },
+    additionalBehaviors: {
+        '/api/*': {
+            origin: new cdk.aws_cloudfront_origins.RestApiOrigin(api, {
+                originPath: '/prod',
+            }),
+            cachePolicy: cdk.aws_cloudfront.CachePolicy.CACHING_DISABLED,
+            viewerProtocolPolicy: cdk.aws_cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+            allowedMethods: cdk.aws_cloudfront.AllowedMethods.ALLOW_ALL,
+
+        }
+    },
+    errorResponses: [
+        {
+            httpStatus: 404,
+            responseHttpStatus: 404,
+            responsePagePath: '/index.html',
+            ttl: cdk.Duration.days(1)
+        },
+        {
+            httpStatus: 403,
+            responseHttpStatus: 403,
+            responsePagePath: '/index.html',
+            ttl: cdk.Duration.days(1)
+        }
+    ]
+});
+
+new cdk.CfnOutput(catSimStack, 'Cloudfront Url', {
+    value: `https://${dist.distributionDomainName}/`,
+});
