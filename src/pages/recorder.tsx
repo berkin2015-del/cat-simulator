@@ -3,14 +3,21 @@ import { useEffect, useState } from "react";
 import { PawImage } from "../components/paw-image"
 import { fetchApi } from "../components/api"
 import { StatusSending } from "../components/api/status";
+import { playAudio } from "../components/audio-processer";
 
 export const Recorder = () => {
 
     const [isWriting, setIsWriting] = useState(false);
     const [message, setMessage] = useState("");
-    const [apiStatus, setApiStatue] = useState('');
+    const [apiStatus, setApiStatus] = useState('');
     const [firstUse, setFirstUse] = useState(true);
     const [waitingApi, setWaitingApi] = useState(false);
+
+    const audioPlayer = async (audioList: string[]) => {
+        for (const trackId of audioList) {
+            await playAudio(trackId);
+        }
+    };
 
     const queryApi = async () => {
         setWaitingApi(true);
@@ -22,25 +29,27 @@ export const Recorder = () => {
         });
         if (apiResponse === null) {
             console.error('Recorder: Error Fetching Api');
-            setApiStatue('Recorder: Error Fetching Api');
+            setApiStatus('Recorder: Error Fetching Api');
             setWaitingApi(false);
             return;
         };
-        console.log('Recorder: Got Response' + apiResponse.toString());
+        console.log('Recorder: Got Response\n' + JSON.stringify(apiResponse));
         if (!apiResponse.hasOwnProperty('message')) {
             console.warn('Recorder: Api response has no message');
         };
-        let apiResponseMessage = apiResponse.message ? apiResponse.message : '';
-        setApiStatue('Got Message: ' + apiResponseMessage);
         setWaitingApi(false);
-
-        // Todo: handle api response
+        let apiResponseMessage = apiResponse.message ? apiResponse.message : '';
+        setApiStatus(apiResponseMessage);
+        if (apiResponse.hasOwnProperty('soundtracks')) {
+            audioPlayer(apiResponse.soundtracks);
+        };
         return;
     };
 
     const handlePawClick = async () => {
         if (!isWriting) {
             console.log("Recorder: Start Writing");
+            setApiStatus('');
             setIsWriting(true);
             return;
         };

@@ -8,7 +8,7 @@ import { Settings } from './pages/settings';
 
 import './index.css';
 
-const root = ReactDOM.createRoot(
+export const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 root.render(

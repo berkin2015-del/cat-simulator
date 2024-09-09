@@ -1,3 +1,4 @@
+import { invokeBedrock } from "./bedrock.mjs";
 
 export const handler = async (event) => {
     console.log(event)
@@ -32,15 +33,17 @@ export const handler = async (event) => {
 
         let message = requestBody.message;
         // TODO: Impliment bedrock
-        returnContent.body = JSON.stringify({ message: message });
-
-
-
-
-
-
-
-        return returnContent
+        try {
+            let response = await invokeBedrock(message);
+            returnContent.body = JSON.stringify(response);
+            return returnContent;
+        } catch {
+            returnContent.body = JSON.stringify({
+                message: 'Meow!',
+                soundtracks: ["meow_01"]
+            });
+            return returnContent
+        };
 
     } catch (error) {
         console.log(error);

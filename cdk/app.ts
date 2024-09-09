@@ -40,7 +40,18 @@ const apiLambdaFunction = new cdk.aws_lambda.Function(catSimStack, 'Api Function
     runtime: cdk.aws_lambda.Runtime.NODEJS_20_X,
     code: cdk.aws_lambda.Code.fromAsset(path.join(__dirname, './api-lambda')),
     handler: 'index.handler',
+    timeout: cdk.Duration.seconds(10),
 });
+
+apiLambdaFunction.role?.attachInlinePolicy(new cdk.aws_iam.Policy(catSimStack, 'Bedrock policy for api', {
+    statements: [
+        new cdk.aws_iam.PolicyStatement({
+            actions: ["bedrock:InvokeModel"],
+            effect: cdk.aws_iam.Effect.ALLOW,
+            resources: ['*'],
+        }),
+    ],
+}));
 
 new cdk.aws_logs.LogGroup(catSimStack, 'Api LogGroup', {
     logGroupName: `/aws/lambda/${apiLambdaFunction.functionName}`,

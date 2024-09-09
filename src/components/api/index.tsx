@@ -27,10 +27,10 @@ export const fetchApi = async (path: string, fetchProps?: RequestInit) => {
         };
         try {
             const apiResponseBody = await apiResponse.json();
-            console.log('API: Response: \n' + apiResponseBody.toString());
+            console.log('API: Response: \n' + JSON.stringify(apiResponseBody));
             return apiResponseBody;
         } catch (error) {
-            console.error("API: Response Parse Error\n" + apiResponse.body)
+            console.error("API: Response Parse Error\n" + (error as Error).message)
             return null;
         };
     } catch (error) {
