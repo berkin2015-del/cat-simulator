@@ -81,7 +81,7 @@ export const Recorder = () => {
             {isWriting ?
                 <>
                     {firstUse ? <p>click to stop.</p> : null}
-                    <div style={{ marginTop: "10vmin" }}>
+                    <div style={{ marginTop: "2em" }}>
                         <textarea
                             name="message"
                             placeholder="Message to cat"
