@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { PawImage } from "../components/paw-image"
 import { fetchApi } from "../components/api"
@@ -8,6 +8,7 @@ export const Recorder = () => {
     const [isWriting, setIsWriting] = useState(false);
     const [message, setMessage] = useState("");
     const [apiStatus, setApiStatue] = useState('');
+    const [firstUse, setFirstUse] = useState(true);
 
     const queryApi = async () => {
         setApiStatue('Loading...');
@@ -38,12 +39,14 @@ export const Recorder = () => {
             setIsWriting(true);
             return;
         };
+        setFirstUse(false);
         console.log("Recorder: Stopped Writing");
         setApiStatue('');
         setIsWriting(false);
         console.log('Recorder: Recived' + message)
         if (!message) {
             console.warn(`Recorder: Empty Message exiting.`);
+            setFirstUse(true);
             return;
         };
         await queryApi();
@@ -61,8 +64,8 @@ export const Recorder = () => {
                 />
             </span>
             {isWriting ?
-                (<>
-                    <p>click to stop.</p>
+                <>
+                    {firstUse ? <p>click to stop.</p> : null}
                     <div style={{ marginTop: "10vmin" }}>
                         <textarea
                             name="message"
@@ -72,8 +75,8 @@ export const Recorder = () => {
                             cols={30}
                         />
                     </div>
-                </>) :
-                (<p>click to record.</p>)}
+                </> :
+                <> {firstUse ? <p>click to record.</p> : null}</>}
             {apiStatus ? (<p>{apiStatus}</p>) : null}
         </div>
     )
