@@ -56,20 +56,24 @@ export const Recorder = () => {
             {/* Image Click Rapper since PawImage cannot pass click */}
             <span onClick={handlePawClick}>
                 <PawImage
-                    spinning={isWriting}
+                    spinning={!isWriting}
                     ignoreClick={true}
                 />
             </span>
             {isWriting ?
-                (<div style={{ marginTop: "5vmin" }}>
-                    <textarea
-                        name="message"
-                        onChange={(e) => { setMessage(e.target.value) }}
-                        rows={5}
-                        cols={30}
-                    />
-                </div>) :
-                (<p>click to record, click again to stop.</p>)}
+                (<>
+                    <p>click to stop.</p>
+                    <div style={{ marginTop: "10vmin" }}>
+                        <textarea
+                            name="message"
+                            placeholder="Message to cat"
+                            onChange={(e) => { setMessage(e.target.value) }}
+                            rows={5}
+                            cols={30}
+                        />
+                    </div>
+                </>) :
+                (<p>click to record.</p>)}
             {apiStatus ? (<p>{apiStatus}</p>) : null}
         </div>
     )
