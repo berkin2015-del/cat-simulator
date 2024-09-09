@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 
-import { PawImage } from "../components/paw-image"
-import { fetchApi } from "../components/api"
+import { fetchApi } from "../components/api";
+import { PawImage } from "../components/paw-image";
 import { StatusSending } from "../components/api/status";
 import { playAudio } from "../components/audio-processer";
 
@@ -12,6 +13,16 @@ export const Recorder = () => {
     const [apiStatus, setApiStatus] = useState('');
     const [firstUse, setFirstUse] = useState(true);
     const [waitingApi, setWaitingApi] = useState(false);
+    const [searchParams, setSearchParams] = useSearchParams();
+    const [overideApiUrl, setOverideApiUrl] = useState('');
+
+    useEffect(() => {
+        let queryStringApiUrl = searchParams.get("api_url");
+        if (queryStringApiUrl) {
+            console.log("Recorder: Found api url in query strings\n" + queryStringApiUrl + '\n Overiding localStorage');
+            setOverideApiUrl(queryStringApiUrl);
+        };
+    }, []);
 
     const audioPlayer = async (audioList: string[]) => {
         for (const trackId of audioList) {
@@ -26,7 +37,7 @@ export const Recorder = () => {
             body: JSON.stringify({
                 message: message,
             }),
-        });
+        }, overideApiUrl);
         if (apiResponse === null) {
             console.error('Recorder: Error Fetching Api');
             setApiStatus('Recorder: Error Fetching Api');

@@ -16,8 +16,8 @@ export const setApiUrl = (url: string) => {
 
 export const apiUrl = getApiUrl();
 
-export const fetchApi = async (path: string, fetchProps?: RequestInit) => {
-    const fullUrl = urlJoin(apiUrl, path);
+export const fetchApi = async (path: string, fetchProps?: RequestInit, overideApiUrl?: string) => {
+    const fullUrl = urlJoin(overideApiUrl ? overideApiUrl : apiUrl, path);
     console.log('API: Fetching ' + fullUrl);
     try {
         const apiResponse = await fetch(fullUrl, fetchProps);
