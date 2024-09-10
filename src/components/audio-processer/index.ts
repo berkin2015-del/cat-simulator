@@ -1,5 +1,9 @@
 export const playAudio = async (trackId: string) => {
     try {
+        if (!trackId) {
+            console.warn("Audio Processer: Got Empty Track Id - Skipped");
+            return;
+        };
         const audio = new Audio(require(`./sounds/${trackId}.mp3`));
         await new Promise<void>((resolve, reject) => {
             audio.play().then(() => {

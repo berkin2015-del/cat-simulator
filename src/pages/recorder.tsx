@@ -1,17 +1,18 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
-import { fetchApi } from "../components/api";
-import { PawImage } from "../components/paw-image";
-import { StatusSending } from "../components/api/status";
-import { playAudio } from "../components/audio-processer";
 import * as settings from "../components/settings"
+import { PawImage } from "../components/paw-image";
+import { StatusThinking } from "../components/recorder/status";
+import { playAudio } from "../components/audio-processer";
+
+import { queryApi } from "../components/recorder";
 
 export const Recorder = () => {
 
     const [isWriting, setIsWriting] = useState(false);
     const [message, setMessage] = useState("");
-    const [apiStatus, setApiStatus] = useState('');
+    const [apiResponseMessage, setApiResponseMessage] = useState('');
     const [firstUse, setFirstUse] = useState(true);
     const [waitingApi, setWaitingApi] = useState(false);
     const [searchParams, setSearchParams] = useSearchParams();
@@ -25,31 +26,14 @@ export const Recorder = () => {
         };
     }, []);
 
-    const queryApi = async () => {
-        setWaitingApi(true);
-        let apiResponse = await fetchApi('chat', {
-            method: 'POST',
-            body: JSON.stringify({
-                message: message,
-            }),
-        }, overideApiUrl);
-        if (apiResponse === null) {
-            console.error('Recorder: Error Fetching Api');
-            setApiStatus('Meow!!!');
-            setWaitingApi(false);
-            return;
-        };
-        console.log('Recorder: Got Response\n' + JSON.stringify(apiResponse));
-        if (!apiResponse.hasOwnProperty('message')) {
-            console.warn('Recorder: Api response has no message');
-        };
-        setWaitingApi(false);
-        let apiResponseMessage = apiResponse.message ? apiResponse.message : 'meow';
-        setApiStatus(apiResponseMessage);
-        if (apiResponse.hasOwnProperty('soundtracks')) {
-            for (const trackId of apiResponse.soundtracks) {
-                await playAudio(trackId);
-            }
+    const processApiResponse = async (response: {
+        message: string,
+        soundtracks: string[]
+    }) => {
+        console.log('Recorder: Got Response\n' + JSON.stringify(response));
+        setApiResponseMessage(response.message);
+        for (const trackId of response.soundtracks) {
+            await playAudio(trackId);
         };
         return;
     };
@@ -57,24 +41,27 @@ export const Recorder = () => {
     const handlePawClick = async () => {
         if (!isWriting) {
             console.log("Recorder: Start Writing");
-            setApiStatus('');
+            setApiResponseMessage('');
             setIsWriting(true);
             return;
         };
         console.log("Recorder: Stopped Writing");
         setFirstUse(false);
         setIsWriting(false);
-        console.log('Recorder: Recived' + message)
+        console.log('Recorder: Recived \n' + message)
         if (!settings.allowEmptyMessage && !message) {
             console.warn(`Recorder: Empty Message exiting.`);
-            if (!apiStatus) {
+            if (!apiResponseMessage) {
                 setFirstUse(true);
-            }
+            };
             return;
         } else {
             console.warn('Recorder: Allowed Empty Message')
         };
-        await queryApi();
+        setWaitingApi(true);
+        let apiResponse = await queryApi(overideApiUrl, message);
+        setWaitingApi(false)
+        await processApiResponse(apiResponse);
         setMessage('');
         return;
     };
@@ -103,7 +90,7 @@ export const Recorder = () => {
                 </> :
                 <> {firstUse ? <p>click to start.</p> : null}</>}
             <div style={{ maxWidth: '400px', margin: '0 auto' }}>
-                {waitingApi ? <p><StatusSending /></p> : apiStatus ? <p>{apiStatus}</p> : null}
+                {waitingApi ? <p><StatusThinking /></p> : apiResponseMessage ? <p>{apiResponseMessage}</p> : null}
             </div>
         </div>
     )

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-export const StatusSending = () => {
+export const StatusThinking = () => {
     const [trailingDot, setTrailingDot] = useState('');
 
     useEffect(() => {

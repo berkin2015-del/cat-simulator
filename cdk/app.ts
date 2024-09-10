@@ -2,10 +2,10 @@ import path from 'path';
 import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 
-const catSimStack = new cdk.Stack(new cdk.App(), "Cat-Simulator", {});
-const catSimApi = new Construct(catSimStack, 'Cat Simulator Api');
-const catSimStore = new Construct(catSimStack, 'Cat Simulator Storage');
-const catSimInterface = new Construct(catSimStack, 'Cat Simulator Interface');
+const catSim = new cdk.Stack(new cdk.App(), "Cat-Simulator", {});
+const catSimApi = new Construct(catSim, 'Cat Simulator Api');
+const catSimStore = new Construct(catSim, 'Cat Simulator Storage');
+const catSimInterface = new Construct(catSim, 'Cat Simulator Interface');
 
 const websiteBucket = new cdk.aws_s3.Bucket(catSimStore, "Web Interface", {
     autoDeleteObjects: true,
@@ -19,9 +19,22 @@ new cdk.aws_s3_deployment.BucketDeployment(catSimStore, "Bucket interface deploy
     extract: true,
 });
 
+const chatTtlTable = new cdk.aws_dynamodb.Table(catSimStore, 'chat TTL Table', {
+    readCapacity: 1,
+    writeCapacity: 1,
+    partitionKey: {
+        name: 'chatId',
+        type: cdk.aws_dynamodb.AttributeType.STRING,
+    },
+    timeToLiveAttribute: 'TTL',
+    deletionProtection: true,
+    billingMode: cdk.aws_dynamodb.BillingMode.PROVISIONED,
+    removalPolicy: cdk.RemovalPolicy.DESTROY,
+});
+
 const chatTable = new cdk.aws_dynamodb.Table(catSimStore, 'Chat Table', {
-    maxReadRequestUnits: 1,
-    maxWriteRequestUnits: 1,
+    readCapacity: 3,
+    writeCapacity: 3,
     partitionKey: {
         name: 'chatId',
         type: cdk.aws_dynamodb.AttributeType.STRING
@@ -31,6 +44,9 @@ const chatTable = new cdk.aws_dynamodb.Table(catSimStore, 'Chat Table', {
         type: cdk.aws_dynamodb.AttributeType.STRING
     },
     timeToLiveAttribute: 'TTL',
+    deletionProtection: true,
+    billingMode: cdk.aws_dynamodb.BillingMode.PROVISIONED,
+    removalPolicy: cdk.RemovalPolicy.DESTROY,
 });
 
 const apiFunction = new cdk.aws_lambda.Function(catSimApi, 'Api Function', {
@@ -40,6 +56,7 @@ const apiFunction = new cdk.aws_lambda.Function(catSimApi, 'Api Function', {
     timeout: cdk.Duration.seconds(10),
     environment: {
         CHAT_TABLE_NAME: chatTable.tableName,
+        CHAT_TTL_TABLE_NAME: chatTtlTable.tableName,
     },
 });
 
@@ -55,7 +72,7 @@ apiFunction.role?.attachInlinePolicy(new cdk.aws_iam.Policy(catSimApi, 'Dynamo D
     statements: [new cdk.aws_iam.PolicyStatement({
         effect: cdk.aws_iam.Effect.ALLOW,
         actions: ["dynamodb:Query", "dynamodb:PutItem"],
-        resources: [chatTable.tableArn],
+        resources: [chatTable.tableArn, chatTtlTable.tableArn],
     }),],
 }));
 
@@ -110,10 +127,10 @@ const dist = new cdk.aws_cloudfront.Distribution(catSimInterface, "Distribution 
     ]
 });
 
-new cdk.CfnOutput(catSimStack, 'CloudfrontDistributionUrl', {
+new cdk.CfnOutput(catSim, 'CloudfrontDistributionUrl', {
     value: `https://${dist.distributionDomainName}/`,
 });
 
-new cdk.CfnOutput(catSimStack, 'CloudfrontDistributionID', {
+new cdk.CfnOutput(catSim, 'CloudfrontDistributionID', {
     value: dist.distributionId,
 });
