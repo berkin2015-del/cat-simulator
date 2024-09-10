@@ -1,5 +1,5 @@
 import { invokeBedrock, messagify } from "./bedrock.mjs";
-import { getPastMessagesFromChatId } from "./dynamo.mjs";
+import { getPastMessagesFromChatId, putNewMessageToChat } from "./dynamo.mjs";
 
 export const handler = async (event) => {
     console.log(event)
@@ -55,43 +55,79 @@ export const handler = async (event) => {
             return response;
         };
 
+        let message = requestBody.message
+        let pastMessages;
+        let filteredBedrockPastMessage;
+        let bedrockResponse;
+
         try {
-            let newMessage = requestBody.message;
-            let pastMessages = await getPastMessagesFromChatId(chatId);
+            pastMessages = await getPastMessagesFromChatId(chatId);
 
             // alternating user and assistant in case db is fucked
             // and account for empty message block
             let startingRole = 'user';
-            let filteredBedrockPastMessage = pastMessages.map((message) => {
+            filteredBedrockPastMessage = pastMessages.map((message) => {
                 let role = startingRole;
                 startingRole = startingRole === 'user' ? 'assistant' : 'user';
                 let msg = message.message ? message.message : 'meow'
                 return messagify(role, msg);
             });
-
             // append empty if last one has user role
             if (startingRole === 'assistant') {
-                filteredBedrockPastMessage.push(messagify('assistant', 'Empty Message'));
+                filteredBedrockPastMessage.push(messagify('assistant', 'meow'));
             };
-
-            let bedrockResponse = await invokeBedrock(newMessage, filteredBedrockPastMessage);
-            bedrockResponse.chatId = chatId;
-            response.body = JSON.stringify(bedrockResponse);
-            return response;
         } catch (error) {
             console.error(error)
             response.body = JSON.stringify({
-                message: 'Meow!',
+                message: '~Meow!!!!',
                 soundtracks: ["meow_01"]
             });
             return response
         };
+        try {
+            bedrockResponse = await invokeBedrock(message, filteredBedrockPastMessage);
+        } catch (error) {
+            console.error(error)
+            response.body = JSON.stringify({
+                message: '~Meow! !!!',
+                soundtracks: ["meow_01"]
+            });
+            return response
+        };
+        try {
+            await Promise.all([
+                putNewMessageToChat(chatId, message, 'user'),
+                putNewMessageToChat(chatId, bedrockResponse.message, 'assistant')
+            ]);
+        } catch (error) {
+            console.error(error)
+            response.body = JSON.stringify({
+                message: '~Meow!! !!',
+                soundtracks: ["meow_01"]
+            });
+            return response
+        };
+        try {
+            response.body = bedrockResponse;
+            response.body.chatId = chatId;
+            response.body = JSON.stringify(response.body);
+            return response;
+        } catch (error) {
+            console.error(error)
+            response.body = JSON.stringify({
+                message: '~Meow! ! !!',
+                soundtracks: ["meow_01"]
+            });
+            return response
+        }
 
     } catch (error) {
-        console.error(error);
-        response.statusCode = 500;
-        response.body = JSON.stringify({ message: "Server Error" });
-        return response;
+        console.error(error)
+        response.body = JSON.stringify({
+            message: '~Meow! ! ! !',
+            soundtracks: ["meow_01"]
+        });
+        return response
     };
 
 };
