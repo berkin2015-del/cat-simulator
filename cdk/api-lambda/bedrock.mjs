@@ -63,7 +63,7 @@ export const invokeBedrock = async (message) => {
             ],
             system: systemPrompt,
             anthropic_version: "bedrock-2023-05-31",
-            max_tokens: 1024,
+            max_tokens: 2000,
             temperature: 1,
             top_k: 250,
             top_p: 0.999,

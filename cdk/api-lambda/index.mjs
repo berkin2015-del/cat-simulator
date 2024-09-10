@@ -1,9 +1,12 @@
 import { invokeBedrock } from "./bedrock.mjs";
+import { getPastMessagesFromChatId } from "./dynamo.mjs";
+
+const { randomUUID } = require('crypto');
 
 export const handler = async (event) => {
     console.log(event)
 
-    let returnContent = {
+    let response = {
         statusCode: 200,
         headers: {
             "Content-Type": "application/json",
@@ -14,42 +17,70 @@ export const handler = async (event) => {
 
     let path = event.path;
     if (path !== '/api/chat') {
-        return returnContent;
+        return response;
     };
 
     let rawRequestBody = event.body;
     if (rawRequestBody === null) {
-        returnContent.statusCode = 400;
-        return returnContent;
+        response.statusCode = 400;
+        response.body = JSON.stringify({ message: "Missing Body Content" })
+        return response;
     };
 
     try {
-        let requestBody = JSON.parse(rawRequestBody);
+        let requestBody;
+        try {
+            requestBody = JSON.parse(rawRequestBody);
+        } catch (error) {
+            response.statusCode = 400;
+            response.body = JSON.stringify({ message: "Invalid JSON" });
+            return response;
+        }
         if (!requestBody.hasOwnProperty('message')) {
-            returnContent.statusCode = 400;
-            returnContent.body = JSON.stringify({ message: "Missing Message" });
-            return returnContent;
+            response.statusCode = 400;
+            response.body = JSON.stringify({ message: "Missing Message" });
+            return response;
+        };
+        if (!requestBody.hasOwnProperty('chatId')) {
+            response.statusCode = 400;
+            response.body = JSON.stringify({ message: "Missing Chat ID" });
+            return response;
         };
 
         let message = requestBody.message;
+        let chatId = requestBody.chatId ? requestBody.chatId : randomUUID()
+
+        let responseBody = {
+            chatId: chatId,
+            message: '',
+            soundtracks: [],
+        };
+
         try {
-            let response = await invokeBedrock(message);
-            returnContent.body = JSON.stringify(response);
-            return returnContent;
+            // let response = await invokeBedrock(message);
+            // response.body = JSON.stringify(response);
+            // return response;
+            let pastMessages = await getPastMessagesFromChatId(chatId);
+
+
+
+
+
+
         } catch (error) {
             console.error(error)
-            returnContent.body = JSON.stringify({
+            response.body = JSON.stringify({
                 message: 'Meow!',
                 soundtracks: ["meow_01"]
             });
-            return returnContent
+            return response
         };
 
     } catch (error) {
         console.error(error);
-        returnContent.statusCode = 500;
-        returnContent.body = JSON.stringify({ message: "Server Error" });
-        return returnContent;
+        response.statusCode = 500;
+        response.body = JSON.stringify({ message: "Server Error" });
+        return response;
     };
 
 };
