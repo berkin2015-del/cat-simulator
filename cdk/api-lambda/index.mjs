@@ -87,6 +87,7 @@ export const handler = async (event) => {
         };
         try {
             bedrockResponse = await invokeBedrock(message, filteredBedrockPastMessage);
+            console.log('Got Bedrock Response \n', bedrockResponse)
         } catch (error) {
             console.error(error)
             response.body = JSON.stringify({
@@ -97,7 +98,9 @@ export const handler = async (event) => {
         };
         try {
             await putNewMessageToChat(chatId, message, 'user');
-            await putNewMessageToChat(chatId, bedrockResponse.message, 'assistant');
+            console.log('User message inserted');
+            await putNewMessageToChat(chatId, bedrockResponse.message ? bedrockResponse.message : 'meow', 'assistant');
+            console.log('Assistant message inserted');
         } catch (error) {
             console.error(error)
             response.body = JSON.stringify({

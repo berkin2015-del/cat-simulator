@@ -1,17 +1,19 @@
 import { Settings_ApiUrl } from "../components/settings/api-url";
 import { Settings_AllowEmptyMessage } from "../components/settings/allow-empty-message";
+import { Settings_ChatId } from "../components/settings/chat-id";
 
 export const Settings = () => {
 
 	return (
 		<div className="place-h-center">
 			<h2>Settings</h2>
-			<table style={{marginLeft: 'auto', marginRight: 'auto'}}>
+			<table style={{ marginLeft: 'auto', marginRight: 'auto' }}>
 				<thead><tr><td>Property</td><td>Value</td><td>Action</td></tr>
 				</thead>
 				<tbody>
 					<Settings_ApiUrl />
 					<Settings_AllowEmptyMessage />
+					<Settings_ChatId />
 				</tbody>
 			</table>
 			<div style={{ marginTop: '2vh' }} />
