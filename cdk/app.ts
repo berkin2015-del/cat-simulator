@@ -19,19 +19,6 @@ new cdk.aws_s3_deployment.BucketDeployment(catSimStore, "Bucket interface deploy
     extract: true,
 });
 
-const chatTtlTable = new cdk.aws_dynamodb.Table(catSimStore, 'chat TTL Table', {
-    readCapacity: 1,
-    writeCapacity: 1,
-    partitionKey: {
-        name: 'chatId',
-        type: cdk.aws_dynamodb.AttributeType.STRING,
-    },
-    timeToLiveAttribute: 'TTL',
-    deletionProtection: true,
-    billingMode: cdk.aws_dynamodb.BillingMode.PROVISIONED,
-    removalPolicy: cdk.RemovalPolicy.DESTROY,
-});
-
 const chatTable = new cdk.aws_dynamodb.Table(catSimStore, 'Chat Table', {
     readCapacity: 3,
     writeCapacity: 3,
@@ -56,7 +43,6 @@ const apiFunction = new cdk.aws_lambda.Function(catSimApi, 'Api Function', {
     timeout: cdk.Duration.seconds(10),
     environment: {
         CHAT_TABLE_NAME: chatTable.tableName,
-        CHAT_TTL_TABLE_NAME: chatTtlTable.tableName,
     },
 });
 
@@ -72,7 +58,7 @@ apiFunction.role?.attachInlinePolicy(new cdk.aws_iam.Policy(catSimApi, 'Dynamo D
     statements: [new cdk.aws_iam.PolicyStatement({
         effect: cdk.aws_iam.Effect.ALLOW,
         actions: ["dynamodb:Query", "dynamodb:PutItem"],
-        resources: [chatTable.tableArn, chatTtlTable.tableArn],
+        resources: [chatTable.tableArn],
     }),],
 }));
 

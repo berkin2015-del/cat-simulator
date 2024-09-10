@@ -43,7 +43,7 @@ export const getPastMessagesFromChatId = async (chatId) => {
     const client = new DynamoDBClient();
     const response = await client.send(new QueryCommand({
         TableName: process.env.CHAT_TABLE_NAME,
-        ScanIndexForward: false,
+        ScanIndexForward: true,
         // AttributesToGet: ['chatId', 'timestamp', 'from', 'mesasge'],
         KeyConditionExpression: 'chatId = :chatId',
         ExpressionAttributeValues: {
@@ -71,6 +71,7 @@ export const putNewMessageToChat = async (chatId, message, sender) => {
     return response
 };
 
+// testing plain
 // let chatId = '2c23fe40-ca04-43f8-97a3-a77a746e92f1'; 
 // let count = 1
 // while (true) {

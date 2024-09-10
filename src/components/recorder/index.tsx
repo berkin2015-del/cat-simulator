@@ -22,16 +22,4 @@ export const queryApi = async (overideApiUrl: string, message: string) => {
         response.soundtracks = ['meow_01']
     };
     return response;
-};
-
-const processApiResponse = async (response: {
-    message: string,
-    soundtracks: string[]
-}) => {
-    console.log('Recorder: Got Response\n' + JSON.stringify(response));
-    setApiStatus(response.message);
-    for (const trackId of response.soundtracks) {
-        await playAudio(trackId);
-    };
-    return;
-};
+}

@@ -61,7 +61,9 @@ export const handler = async (event) => {
             // response.body = JSON.stringify(response);
             // return response;
             let pastMessages = await getPastMessagesFromChatId(chatId);
+            let filteredPastMessage = pastMessages.map((message) => {
 
+            })
 
 
 
