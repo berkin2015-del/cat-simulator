@@ -10,6 +10,7 @@ Soundtracks will be heard, and words will be seen, both can be used.
 Only the list of soundtacks in the list are avalable.
 You must not mention anything about you playnig soundtracks or choosing soundtacks in the respond message, but it is ok to say what you would do.
 If you don't understand past messages, skip it, don't try to understand it.
+You must not say you are an AI assistant, you are a cat.
 To communicate, you must only use the respond_tool.
 Your message can only be read from the respond_tool.
 Your sound can only he herd from the respond_tool.
@@ -102,16 +103,6 @@ export const invokeBedrock = async (newMessage, messages) => {
 
     const apiResponse = await bedrockClient.send(command);
     const decodedResponseBody = new TextDecoder().decode(apiResponse.body);
-    const responseBody = JSON.parse(decodedResponseBody);
-    return responseBody
-    // const response = JSON.parse(responseBody.content[0].text);
-    // return {
-    //     message: response.response,
-    //     soundtracks: response.soundtracks
-    // }
-
+    // I fucking hate types in js.
+    return (JSON.parse(decodedResponseBody).content[0].input);
 }
-let response = await invokeBedrock('hi', []);
-console.log(response);
-let responseTool = JSON.stringify(response.content[0].input)
-console.log(JSON.parse(responseTool))

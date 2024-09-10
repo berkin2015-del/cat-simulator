@@ -64,7 +64,8 @@ export const putNewMessageToChat = async (chatId, message, sender) => {
             chatId: chatId,
             message: message,
             sender: sender,
-            timestamp: new Date()
+            // deply for assistant message
+            timestamp: sender === 'assistant' ? new Date(new Date().setDate(new Date().getSeconds() + 3)) : new Date()
         }).out()),
     }));
     return response

@@ -55,7 +55,8 @@ export const handler = async (event) => {
             return response;
         };
 
-        let message = requestBody.message
+        // bedrock doesn't allow empty message, don't know why it worked before but not now
+        let message = requestBody.message ? requestBody.message : 'hi'
         let pastMessages;
         let filteredBedrockPastMessage;
         let bedrockResponse;
@@ -95,10 +96,8 @@ export const handler = async (event) => {
             return response
         };
         try {
-            await Promise.all([
-                putNewMessageToChat(chatId, message, 'user'),
-                putNewMessageToChat(chatId, bedrockResponse.message, 'assistant')
-            ]);
+            await putNewMessageToChat(chatId, message, 'user');
+            await putNewMessageToChat(chatId, bedrockResponse.message, 'assistant');
         } catch (error) {
             console.error(error)
             response.body = JSON.stringify({
