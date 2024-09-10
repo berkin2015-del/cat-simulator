@@ -1,6 +1,5 @@
 import { DynamoDBClient, QueryCommand, PutItemCommand } from "@aws-sdk/client-dynamodb";
-import pkg from 'aws-sdk';
-const { DynamoDB } = pkg;
+import { marshall, unmarshall } from "@aws-sdk/util-dynamodb"
 
 /*
 Expected Message Object
@@ -52,7 +51,7 @@ export const getPastMessagesFromChatId = async (chatId) => {
             },
         },
     }));
-    let items = response.Items.map(item => DynamoDB.Converter.unmarshall(item));
+    let items = response.Items.map(item => unmarshall(item));
     items = items.map((item) => { return new Message(item).out() });
     return items;
 };
@@ -61,7 +60,7 @@ export const putNewMessageToChat = async (chatId, message, sender) => {
     const client = new DynamoDBClient();
     const response = await client.send(new PutItemCommand({
         TableName: process.env.CHAT_TABLE_NAME,
-        Item: DynamoDB.Converter.marshall(new Message({
+        Item: marshall(new Message({
             chatId: chatId,
             message: message,
             sender: sender,
@@ -78,4 +77,5 @@ export const putNewMessageToChat = async (chatId, message, sender) => {
 //     console.log(await putNewMessageToChat(chatId, 'Message' + count, 'user'));
 //     count++;
 // }
+// console.log('hi')
 // console.log(await getPastMessagesFromChatId(chatId))

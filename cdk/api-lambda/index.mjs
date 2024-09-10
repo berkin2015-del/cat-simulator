@@ -1,7 +1,5 @@
-import { invokeBedrock } from "./bedrock.mjs";
+import { invokeBedrock, messagify } from "./bedrock.mjs";
 import { getPastMessagesFromChatId } from "./dynamo.mjs";
-
-const { randomUUID } = require('crypto');
 
 export const handler = async (event) => {
     console.log(event)
@@ -33,42 +31,53 @@ export const handler = async (event) => {
             requestBody = JSON.parse(rawRequestBody);
         } catch (error) {
             response.statusCode = 400;
-            response.body = JSON.stringify({ message: "Invalid JSON" });
+            response.body = JSON.stringify({ message: "Invalid Request" });
             return response;
-        }
+        };
+
         if (!requestBody.hasOwnProperty('message')) {
             response.statusCode = 400;
             response.body = JSON.stringify({ message: "Missing Message" });
             return response;
         };
-        if (!requestBody.hasOwnProperty('chatId')) {
+
+        let chatId = requestBody.chatId;
+        if (!chatId) {
             response.statusCode = 400;
             response.body = JSON.stringify({ message: "Missing Chat ID" });
             return response;
         };
 
-        let message = requestBody.message;
-        let chatId = requestBody.chatId ? requestBody.chatId : randomUUID()
-
-        let responseBody = {
-            chatId: chatId,
-            message: '',
-            soundtracks: [],
+        let chatIdRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+        if (!chatIdRegex.test(chatId)) {
+            response.statusCode = 400;
+            response.body = JSON.stringify({ message: "Invalid Chat ID" });
+            return response;
         };
 
         try {
-            // let response = await invokeBedrock(message);
-            // response.body = JSON.stringify(response);
-            // return response;
+            let newMessage = requestBody.message;
             let pastMessages = await getPastMessagesFromChatId(chatId);
-            let filteredPastMessage = pastMessages.map((message) => {
 
-            })
+            // alternating user and assistant in case db is fucked
+            // and account for empty message block
+            let startingRole = 'user';
+            let filteredBedrockPastMessage = pastMessages.map((message) => {
+                let role = startingRole;
+                startingRole = startingRole === 'user' ? 'assistant' : 'user';
+                let msg = message.message ? message.message : 'meow'
+                return messagify(role, msg);
+            });
 
+            // append empty if last one has user role
+            if (startingRole === 'assistant') {
+                filteredBedrockPastMessage.push(messagify('assistant', 'Empty Message'));
+            };
 
-
-
-
+            let bedrockResponse = await invokeBedrock(newMessage, filteredBedrockPastMessage);
+            bedrockResponse.chatId = chatId;
+            response.body = JSON.stringify(bedrockResponse);
+            return response;
         } catch (error) {
             console.error(error)
             response.body = JSON.stringify({
