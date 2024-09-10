@@ -7,9 +7,12 @@ Expected Message Object
 {
     chatId: '2c23fe40-ca04-43f8-97a3-a77a746e92f1',
     timestamp: 2024-09-10T10:54:42.189Z,
-    sender: item.sender ===  ? item.sender : 'user',
+    sender: item.sender === 'assistant' ? 'assistant' : 'user',
     message: item.message,
     ttl: 1725965682,
+
+    if ttl is not specified, will set to one dat later
+    if no sender or invalid sender, set to user
 }
 */
 export class Message {
@@ -20,10 +23,10 @@ export class Message {
     ttl;
     constructor(item) {
         this.chatId = item.chatId;
-        this.timestamp = !isNaN(new Date(item.timestamp).getTime()) ? new Date(item.timestamp) : new Date();
+        this.timestamp = !isNaN(new Date(item.timestamp).getTime()) ? new Date(item.timestamp).toISOString() : new Date().toISOString();
         this.sender = item.sender === 'assistant' ? 'assistant' : 'user';
         this.message = item.message ? item.message : '';
-        this.ttl = !isNaN(new Date(item.ttl).getTime()) ? new Date(item.ttl) : new Date().setDate(new Date().getDate() + 1);
+        this.ttl = !isNaN(new Date(item.ttl).getTime()) ? new Date(item.ttl).getTime() : Math.floor(new Date(new Date().setDate(new Date().getDate() + 1)).getTime() / 1000);
     }
     out = () => {
         return {
@@ -54,18 +57,24 @@ export const getPastMessagesFromChatId = async (chatId) => {
     return items;
 };
 
-export const putNewMessageToChat = async (chatId, message, from) => {
-    const date = new Date()
+export const putNewMessageToChat = async (chatId, message, sender) => {
     const client = new DynamoDBClient();
     const response = await client.send(new PutItemCommand({
         TableName: process.env.CHAT_TABLE_NAME,
-        Item: DynamoDB.Converter.marshall({
+        Item: DynamoDB.Converter.marshall(new Message({
             chatId: chatId,
-            timestamp: date.toISOString()
-        })
+            message: message,
+            sender: sender,
+            timestamp: new Date()
+        }).out()),
     }));
-
+    return response
 };
 
-let response = await getPastMessagesFromChatId('2c23fe40-ca04-43f8-97a3-a77a746e92f1');
-console.log(response);
+// let chatId = '2c23fe40-ca04-43f8-97a3-a77a746e92f1'; 
+// let count = 1
+// while (true) {
+//     console.log(await putNewMessageToChat(chatId, 'Message' + count, 'user'));
+//     count++;
+// }
+// console.log(await getPastMessagesFromChatId(chatId))
