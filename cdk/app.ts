@@ -28,7 +28,7 @@ const chatTable = new cdk.aws_dynamodb.Table(catSimStore, 'Chat Table', {
     },
     sortKey: {
         name: 'timestamp',
-        type: cdk.aws_dynamodb.AttributeType.STRING
+        type: cdk.aws_dynamodb.AttributeType.NUMBER
     },
     timeToLiveAttribute: 'TTL',
     deletionProtection: true,

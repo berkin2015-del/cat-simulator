@@ -5,8 +5,8 @@ import { marshall, unmarshall } from "@aws-sdk/util-dynamodb"
 Expected Message Object
 {
     chatId: 'e9f34e10-6c34-4ba0-92cf-797e67f897f8',
-    timestamp: 2024-09-10T10:54:42.189Z,
-    message: item.message,
+    timestamp: 1725965682,
+    message: bedrock message object,
     ttl: 1725965682,
 
     if ttl is not specified, will set to one dat later
@@ -20,8 +20,8 @@ export class Message {
     ttl;
     constructor(item) {
         this.chatId = item.chatId;
-        this.timestamp = !isNaN(new Date(item.timestamp).getTime()) ? new Date(item.timestamp).toISOString() : new Date().toISOString();
-        this.message = item.content ? item.content : {};
+        this.timestamp = !isNaN(new Date(item.timestamp).getTime()) ? new Date(item.timestamp).getTime() : new Date().getTime();
+        this.message = item.message ? item.message : {};
         this.ttl = !isNaN(new Date(item.ttl).getTime()) ? new Date(item.ttl).getTime() : Math.floor(new Date(new Date().setDate(new Date().getDate() + 1)).getTime() / 1000);
     }
     out = () => {
@@ -46,23 +46,34 @@ export const getPastMessagesFromChatId = async (chatId) => {
             },
         },
     }));
-    let items = response.Items.map(item => unmarshall(item));
-    items = items.map((item) => { return new Message(item).out() });
+    console.log('From Dynamo DB\n', JSON.stringify(response))
+    let items = [];
+
+    for (let item of response.Items) {
+        let unmarshalledItem = unmarshall(item);
+        let message = new Message(unmarshalledItem).out();
+        items.push(message);
+    }
+
     return items;
 };
 
-export const putNewMessageToChat = async (chatId, message, isAssistant=false) => {
+export const putNewMessageToChat = async (chatId, message, isAssistant) => {
     const client = new DynamoDBClient();
     const response = await client.send(new PutItemCommand({
         TableName: process.env.CHAT_TABLE_NAME,
+        ScanIndexForward: true,
         Item: marshall(new Message({
             chatId: chatId,
             message: message,
-            timestamp: isAssistant ? new Date(new Date.setDate(new Date().getSeconds() + 3)) : new Date()
+            timestamp: isAssistant ? Math.floor(new Date(new Date().setSeconds(new Date().getSeconds() + 3)).getTime() / 1000) : Math.floor(new Date().getTime() / 1000)
         }).out()),
     }));
+    console.log(response);
     return response
 };
+
+// export const deleteChat = async (chatId)
 
 // testing plain
 // let chatId = '2c23fe40-ca04-43f8-97a3-a77a746e92f1'; 

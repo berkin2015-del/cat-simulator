@@ -1,4 +1,4 @@
-import { invokeBedrock, messagify } from "./bedrock.mjs";
+import { invokeBedrock, userMessagify } from "./bedrock.mjs";
 import { getPastMessagesFromChatId, putNewMessageToChat } from "./dynamo.mjs";
 
 export const handler = async (event) => {
@@ -56,27 +56,22 @@ export const handler = async (event) => {
         };
 
         // bedrock doesn't allow empty message, don't know why it worked before but not now
-        let message = requestBody.message ? requestBody.message : 'hi'
-        let pastMessages;
-        let filteredBedrockPastMessage;
+        let newMessage = requestBody.message ? requestBody.message : 'hi'
+        let pastMessagesRecord;
+        let pastMessages = [];
         let bedrockResponse;
+        let bedrockResponseMessage;
+        let bedrockNewUserMessage;
 
         try {
-            pastMessages = await getPastMessagesFromChatId(chatId);
-
-            // alternating user and assistant in case db is fucked
-            // and account for empty message block
-            let startingRole = 'user';
-            filteredBedrockPastMessage = pastMessages.map((message) => {
-                let role = startingRole;
-                startingRole = startingRole === 'user' ? 'assistant' : 'user';
-                let msg = message.message ? message.message : 'meow'
-                return messagify(role, msg);
+            pastMessagesRecord = await getPastMessagesFromChatId(chatId);
+            console.log('Got From Dynamo\n', JSON.stringify(pastMessagesRecord));
+            pastMessagesRecord.forEach(record => {
+                if (record.message) {
+                    pastMessages.push(record.message);
+                };
             });
-            // append empty if last one has user role
-            if (startingRole === 'assistant') {
-                filteredBedrockPastMessage.push(messagify('assistant', 'meow'));
-            };
+            console.log('Got Pass Messages', JSON.stringify(pastMessagesRecord));
         } catch (error) {
             console.error(error)
             response.body = JSON.stringify({
@@ -86,8 +81,9 @@ export const handler = async (event) => {
             return response
         };
         try {
-            bedrockResponse = await invokeBedrock(message, filteredBedrockPastMessage);
-            console.log('Got Bedrock Response \n', bedrockResponse)
+            bedrockNewUserMessage = userMessagify(newMessage)
+            bedrockResponse = await invokeBedrock(bedrockNewUserMessage, pastMessages);
+            bedrockResponseMessage = bedrockResponse.message
         } catch (error) {
             console.error(error)
             response.body = JSON.stringify({
@@ -97,9 +93,9 @@ export const handler = async (event) => {
             return response
         };
         try {
-            await putNewMessageToChat(chatId, message, 'user');
+            await putNewMessageToChat(chatId, bedrockNewUserMessage, false);
             console.log('User message inserted');
-            await putNewMessageToChat(chatId, bedrockResponse.message ? bedrockResponse.message : 'meow', 'assistant');
+            await putNewMessageToChat(chatId, bedrockResponseMessage, true);
             console.log('Assistant message inserted');
         } catch (error) {
             console.error(error)
@@ -110,9 +106,12 @@ export const handler = async (event) => {
             return response
         };
         try {
-            response.body = bedrockResponse;
-            response.body.chatId = chatId;
-            response.body = JSON.stringify(response.body);
+            let resault = JSON.parse(JSON.parse(JSON.stringify(bedrockResponseMessage)).content[0].text)
+            response.body = JSON.stringify({
+                chatId: chatId,
+                message: resault.message,
+                soundtracks: resault.soundtracks,
+            })
             return response;
         } catch (error) {
             console.error(error)
