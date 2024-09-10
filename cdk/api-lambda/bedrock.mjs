@@ -1,4 +1,4 @@
-import { BedrockRuntimeClient, InvokeModelCommand } from "@aws-sdk/client-bedrock-runtime";
+import { BedrockRuntimeClient, ConverseCommand } from "@aws-sdk/client-bedrock-runtime";
 
 const systemPrompt = `You are a cat, but not a normal cat.
 When presented with a question you have the full capability to resolve it.
@@ -53,40 +53,62 @@ export const messagify = (role, message) => {
     }
 }
 
-
-export const invokeBedrock = async (newMessage, messages) => {
-    let conpleteMessages = [
-        ...messages,
-        messagify('user', newMessage),
-    ];
-    console.log("Sending to Bedrock\n ", JSON.stringify(conpleteMessages));
-    const bedrockClient = new BedrockRuntimeClient();
-    const command = new InvokeModelCommand({
-        modelId: "anthropic.claude-3-haiku-20240307-v1:0",
-        contentType: "application/json",
-        accept: "application/json",
-        body: JSON.stringify({
-            messages: conpleteMessages,
-            system: systemPrompt,
-            anthropic_version: "bedrock-2023-05-31",
-            max_tokens: 2000,
-            temperature: 0.8,
-            top_k: 250,
-            top_p: 0.999,
-        }),
-    })
-
-    const apiResponse = await bedrockClient.send(command);
-    const decodedResponse = new TextDecoder().decode(apiResponse.body);
-    // I fucking hate types in js.
-    const responseBody = JSON.parse(decodedResponse)
-    console.log('Response from bedrock\n', JSON.stringify(responseBody))
-    // No fucking idea why parsing twice works, 
-    // but it's the only way it will play nice
-    // This single handledly makes me hate javasctipt
-    const r1 = JSON.parse(JSON.stringify(responseBody.content[0].text, null, 2))
-    if (typeof r1 === 'string') {
-        return JSON.parse(r1)
+// https://www.liquid-technologies.com/online-json-to-schema-converter
+const tools = [
+    {
+        toolSpec: {
+            name: 'response_support',
+            description: 'Tool for conversing outside of text',
+            inputSchema: {
+                'json': {
+                    "$schema": "http://json-schema.org/draft-04/schema#",
+                    "type": "object",
+                    "properties": {
+                        "soundtrack": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "required": [
+                        "soundtrack"
+                    ]
+                }
+            }
+        }
     }
-    return r1
+];
+
+export const invokeBedrock = async (newMessage, pastMessages) => {
+    let allMessages = [
+        // ...pastMessages,
+        {
+            role: "user",
+            content: [{ text: newMessage }],
+        },
+    ];
+    console.log("Sending to Bedrock\n", JSON.stringify(allMessages));
+    const bedrockClient = new BedrockRuntimeClient();
+    const command = new ConverseCommand({
+        modelId: "anthropic.claude-3-haiku-20240307-v1:0",
+        inferenceConfig: {
+            maxTokens: 2000,
+            temperature: 0.8,
+            topP: 0.8
+        },
+        // system: { text: systemPrompt },
+        toolConfig: {
+            tools: tools,
+            toolChoice: { tool: { name: "response_support" } }
+        },
+        messages: allMessages,
+    });
+    const response = await bedrockClient.send(command);
+    const stopReason = response.stopReason;
+    console.log(stopReason);
+    const output = response.output;
+    console.log((JSON.stringify(output, null, 2)));
 }
+
+await invokeBedrock('hi', [])

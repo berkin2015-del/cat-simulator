@@ -18,13 +18,13 @@ export class Message {
     chatId;
     timestamp;
     sender;
-    message;
+    content;
     ttl;
     constructor(item) {
         this.chatId = item.chatId;
         this.timestamp = !isNaN(new Date(item.timestamp).getTime()) ? new Date(item.timestamp).toISOString() : new Date().toISOString();
         this.sender = item.sender === 'assistant' ? 'assistant' : 'user';
-        this.message = item.message ? item.message : '';
+        this.content = item.content ? item.content : [{ text: 'empty' }];
         this.ttl = !isNaN(new Date(item.ttl).getTime()) ? new Date(item.ttl).getTime() : Math.floor(new Date(new Date().setDate(new Date().getDate() + 1)).getTime() / 1000);
     }
     out = () => {
