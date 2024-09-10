@@ -107,10 +107,22 @@ export const invokeBedrock = async (newMessage, pastMessages) => {
         messages: allMessages,
     });
     const response = await bedrockClient.send(command);
-    const stopReason = response.stopReason;
-    console.log(stopReason);
-    const output = response.output;
-    console.log((JSON.stringify(output, null, 2)));
+    const output = JSON.parse(JSON.stringify(response.output, null, 2))
+    console.log("Got Respond\n", JSON.stringify(output));
+    return output
+    ///
+    // let outputText = JSON.parse(JSON.stringify(output.message)).content[0].text
+    // let respondObject = JSON.parse(outputText) 
 }
 
-await invokeBedrock('hi', [])
+await invokeBedrock('hi', [
+    { "role": "user", "content": [{ "text": "hi" }] },
+    {
+        "content": [
+            {
+                "text": "{\n  \"message\": \"*meows softly and looks up at you with curious green eyes* Meow? I'm just a curious cat, but I have a big brain that knows a lot. What would you like to know? *tilts head slightly to the side*\",\n  \"soundtracks\": [\"meow_01\", \"meow_02\"]\n}"
+            }
+        ],
+        "role": "assistant"
+    }
+])

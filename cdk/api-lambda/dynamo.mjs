@@ -4,9 +4,8 @@ import { marshall, unmarshall } from "@aws-sdk/util-dynamodb"
 /*
 Expected Message Object
 {
-    chatId: '2c23fe40-ca04-43f8-97a3-a77a746e92f1',
+    chatId: 'e9f34e10-6c34-4ba0-92cf-797e67f897f8',
     timestamp: 2024-09-10T10:54:42.189Z,
-    sender: item.sender === 'assistant' ? 'assistant' : 'user',
     message: item.message,
     ttl: 1725965682,
 
@@ -17,21 +16,18 @@ Expected Message Object
 export class Message {
     chatId;
     timestamp;
-    sender;
-    content;
+    message;
     ttl;
     constructor(item) {
         this.chatId = item.chatId;
         this.timestamp = !isNaN(new Date(item.timestamp).getTime()) ? new Date(item.timestamp).toISOString() : new Date().toISOString();
-        this.sender = item.sender === 'assistant' ? 'assistant' : 'user';
-        this.content = item.content ? item.content : [{ text: 'empty' }];
+        this.message = item.content ? item.content : {};
         this.ttl = !isNaN(new Date(item.ttl).getTime()) ? new Date(item.ttl).getTime() : Math.floor(new Date(new Date().setDate(new Date().getDate() + 1)).getTime() / 1000);
     }
     out = () => {
         return {
             chatId: this.chatId,
             timestamp: this.timestamp,
-            sender: this.sender,
             message: this.message,
             ttl: this.ttl,
         }
@@ -43,7 +39,6 @@ export const getPastMessagesFromChatId = async (chatId) => {
     const response = await client.send(new QueryCommand({
         TableName: process.env.CHAT_TABLE_NAME,
         ScanIndexForward: true,
-        // AttributesToGet: ['chatId', 'timestamp', 'from', 'mesasge'],
         KeyConditionExpression: 'chatId = :chatId',
         ExpressionAttributeValues: {
             ":chatId": {
@@ -56,16 +51,14 @@ export const getPastMessagesFromChatId = async (chatId) => {
     return items;
 };
 
-export const putNewMessageToChat = async (chatId, message, sender) => {
+export const putNewMessageToChat = async (chatId, message, isAssistant=false) => {
     const client = new DynamoDBClient();
     const response = await client.send(new PutItemCommand({
         TableName: process.env.CHAT_TABLE_NAME,
         Item: marshall(new Message({
             chatId: chatId,
             message: message,
-            sender: sender,
-            // deply for assistant message
-            timestamp: sender === 'assistant' ? new Date(new Date().setDate(new Date().getSeconds() + 3)) : new Date()
+            timestamp: isAssistant ? new Date(new Date.setDate(new Date().getSeconds() + 3)) : new Date()
         }).out()),
     }));
     return response
