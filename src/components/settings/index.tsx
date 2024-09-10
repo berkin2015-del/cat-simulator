@@ -24,3 +24,15 @@ export const setAllowEmptyMessage = (value: boolean) => {
         newValue: value.toString(),
     });
 };
+
+
+export const chatId = settingGetter({
+    name: 'chat_id',
+    defaultValue: '',
+});
+export const setChatId = (value: string) => {
+    settingSetter({
+        name: 'chat_id',
+        newValue: value,
+    });
+};
