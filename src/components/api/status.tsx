@@ -12,5 +12,5 @@ export const StatusSending = () => {
         return () => clearInterval(interval);
     }, []);
 
-    return (<span>Sending{trailingDot}</span>);
+    return (<span>Thinking{trailingDot}</span>);
 };

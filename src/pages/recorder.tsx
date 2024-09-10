@@ -25,12 +25,6 @@ export const Recorder = () => {
         };
     }, []);
 
-    const audioPlayer = async (audioList: string[]) => {
-        for (const trackId of audioList) {
-            await playAudio(trackId);
-        }
-    };
-
     const queryApi = async () => {
         setWaitingApi(true);
         let apiResponse = await fetchApi('chat', {
@@ -53,7 +47,9 @@ export const Recorder = () => {
         let apiResponseMessage = apiResponse.message ? apiResponse.message : 'meow';
         setApiStatus(apiResponseMessage);
         if (apiResponse.hasOwnProperty('soundtracks')) {
-            audioPlayer(apiResponse.soundtracks);
+            for (const trackId of apiResponse.soundtracks) {
+                await playAudio(trackId);
+            }
         };
         return;
     };
