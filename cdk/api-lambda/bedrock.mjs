@@ -109,33 +109,33 @@ export const invokeBedrock = async (newMessage, pastMessages) => {
 }
 
 
-let request = { role: "user", content: [{ text: 'Hi' }] }
+// let request = { role: "user", content: [{ text: 'Hi' }] }
 
-let respond = await invokeBedrock(request, []);
+// let respond = await invokeBedrock(request, []);
 
-console.log(respond);
+// console.log(respond);
 
-let retoolUseId = respond.message.content[0].toolUse.toolUseId;
-console.log(retoolUseId);
-let respondOutput = respond.message.content[0].toolUse.input;
-console.log(respondOutput);
+// let retoolUseId = respond.message.content[0].toolUse.toolUseId;
+// console.log(retoolUseId);
+// let respondOutput = respond.message.content[0].toolUse.input;
+// console.log(respondOutput);
 
-let newRequest = { role: "user", content: [{ text: 'Hello' }] }
+// let newRequest = { role: "user", content: [{ text: 'Hello' }] }
 
-respond = await invokeBedrock(newRequest, [
-    request,
-    {
-        role: 'assistant',
-        toolResult: {
-            toolUseId: retoolUseId,
-            content: [{ json: respondOutput }]
-        },
-        content: [{ text: respondOutput.message }]
-    }
-]);
+// respond = await invokeBedrock(newRequest, [
+//     request,
+//     {
+//         role: 'assistant',
+//         toolResult: {
+//             toolUseId: retoolUseId,
+//             content: [{ json: respondOutput }]
+//         },
+//         content: [{ text: respondOutput.message }]
+//     }
+// ]);
 
-console.log(respond);
-retoolUseId = respond.message.content[0].toolUse.toolUseId;
-console.log(retoolUseId);
-respondOutput = respond.message.content[0].toolUse.input;
-console.log(respondOutput);
+// console.log(respond);
+// retoolUseId = respond.message.content[0].toolUse.toolUseId;
+// console.log(retoolUseId);
+// respondOutput = respond.message.content[0].toolUse.input;
+// console.log(respondOutput);

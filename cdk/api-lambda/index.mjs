@@ -59,10 +59,6 @@ export const handler = async (event) => {
         let newMessage = requestBody.message ? requestBody.message : 'hi'
         let pastMessagesRecord;
         let pastMessages = [];
-        let bedrockResponse;
-        let bedrockResponseMessage;
-        let bedrockNewUserMessage;
-
         try {
             pastMessagesRecord = await getPastMessagesFromChatId(chatId);
             console.log('Got From Dynamo\n', JSON.stringify(pastMessagesRecord));
@@ -80,10 +76,21 @@ export const handler = async (event) => {
             });
             return response
         };
+        let bedrockUserMessage = userMessagify(newMessage)
+        let bedrockResponseAssistantMessage;
+        let bedrockOutput;
         try {
-            bedrockNewUserMessage = userMessagify(newMessage)
-            bedrockResponse = await invokeBedrock(bedrockNewUserMessage, pastMessages);
-            bedrockResponseMessage = bedrockResponse.message
+            let respond = await invokeBedrock(bedrockUserMessage, pastMessages);
+            bedrockOutput = respond.message.content[0].toolUse.input;
+            let toolUseId = respond.message.content[0].toolUse.toolUseId;
+            bedrockResponseAssistantMessage = {
+                role: 'assistant',
+                toolResult: {
+                    toolUseId: toolUseId,
+                    content: [{ json: bedrockOutput }]
+                },
+                content: [{ text: bedrockOutput.message }]
+            };
         } catch (error) {
             console.error(error)
             response.body = JSON.stringify({
@@ -93,9 +100,9 @@ export const handler = async (event) => {
             return response
         };
         try {
-            await putNewMessageToChat(chatId, bedrockNewUserMessage, false);
+            await putNewMessageToChat(chatId, bedrockUserMessage, false);
             console.log('User message inserted');
-            await putNewMessageToChat(chatId, bedrockResponseMessage, true);
+            await putNewMessageToChat(chatId, bedrockResponseAssistantMessage, true);
             console.log('Assistant message inserted');
         } catch (error) {
             console.error(error)
@@ -106,12 +113,11 @@ export const handler = async (event) => {
             return response
         };
         try {
-            let resault = JSON.parse(JSON.parse(JSON.stringify(bedrockResponseMessage)).content[0].text)
             response.body = JSON.stringify({
                 chatId: chatId,
-                message: resault.message,
-                soundtracks: resault.soundtracks,
-            })
+                message: bedrockOutput.message,
+                soundtracks: bedrockOutput.soundtracks,
+            });
             return response;
         } catch (error) {
             console.error(error)
