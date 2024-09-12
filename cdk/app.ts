@@ -6,6 +6,7 @@ const catSim = new cdk.Stack(new cdk.App(), "Cat-Simulator", {});
 const catSimApi = new Construct(catSim, 'Cat Simulator Api');
 const catSimStore = new Construct(catSim, 'Cat Simulator Storage');
 const catSimInterface = new Construct(catSim, 'Cat Simulator Interface');
+const catSimAuthencation = new Construct(catSim, 'Cat Simulator Authencation');
 
 const websiteBucket = new cdk.aws_s3.Bucket(catSimStore, "Web Interface", {
     autoDeleteObjects: true,
@@ -120,3 +121,25 @@ new cdk.CfnOutput(catSim, 'CloudfrontDistributionUrl', {
 new cdk.CfnOutput(catSim, 'CloudfrontDistributionID', {
     value: dist.distributionId,
 });
+
+const userPool = new cdk.aws_cognito.UserPool(catSimAuthencation, 'User pool for auth', {
+    accountRecovery: cdk.aws_cognito.AccountRecovery.EMAIL_ONLY,
+    autoVerify: { email: true },
+    deletionProtection: true,
+    deviceTracking: {
+        deviceOnlyRememberedOnUserPrompt: true,
+        challengeRequiredOnNewDevice: true,
+    },
+    email: cdk.aws_cognito.UserPoolEmail.withCognito(),
+    selfSignUpEnabled: true,
+    mfa: cdk.aws_cognito.Mfa.OPTIONAL,
+    userVerification: {
+        emailSubject: 'Verify your email for cat messenger!',
+        emailBody: 'Thanks for signing up to cat messenger! Use visit/click link below to varify your email\n <a href="{##Verify Email##}">{##Verify Email##}</a>',
+        emailStyle: cdk.aws_cognito.VerificationEmailStyle.LINK,
+    },
+    standardAttributes: {
+        preferredUsername: { required: true, mutable: false },
+        email: { required: true, mutable: false }
+    },
+})

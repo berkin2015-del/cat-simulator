@@ -23,6 +23,10 @@ export const Settings_ApiUrl = () => {
             </td>
             <td>
                 <button
+                    onClick={() => _setValue('/api')}
+                >default
+                </button>
+                <button
                     onClick={handleSet}
                 >set
                 </button>
