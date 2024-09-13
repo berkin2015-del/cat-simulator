@@ -17,7 +17,7 @@ root.render(
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Recorder />} />
-        <Route path="settings" element={<Settings />} />
+        <Route path="/settings" element={<Settings />} />
       </Routes>
     </BrowserRouter>
   </React.StrictMode>

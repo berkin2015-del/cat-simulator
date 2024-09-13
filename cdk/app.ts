@@ -37,7 +37,50 @@ const chatTable = new cdk.aws_dynamodb.Table(catSimStore, 'Chat Table', {
     removalPolicy: cdk.RemovalPolicy.DESTROY,
 });
 
-const apiFunction = new cdk.aws_lambda.Function(catSimApi, 'Api Function', {
+const userPool = new cdk.aws_cognito.UserPool(catSimAuthencation, 'User pool for auth', {
+    accountRecovery: cdk.aws_cognito.AccountRecovery.EMAIL_ONLY,
+    autoVerify: { email: true },
+    deletionProtection: true,
+    deviceTracking: {
+        deviceOnlyRememberedOnUserPrompt: true,
+        challengeRequiredOnNewDevice: true,
+    },
+    email: cdk.aws_cognito.UserPoolEmail.withCognito(),
+    selfSignUpEnabled: true,
+    mfa: cdk.aws_cognito.Mfa.OPTIONAL,
+    userVerification: {
+        emailSubject: 'Verify your email for cat messenger!',
+        emailBody: 'Thanks for signing up to cat messenger! Use visit/click link below to varify your email\n <a href="{##Verify Email##}">{##Verify Email##}</a>',
+        emailStyle: cdk.aws_cognito.VerificationEmailStyle.LINK,
+    },
+    standardAttributes: {
+        preferredUsername: { required: true, mutable: false },
+        email: { required: true, mutable: false }
+    },
+});
+
+const userPoolClient = new cdk.aws_cognito.UserPoolClient(catSimAuthencation, 'Cat Sim Auth Api Client', {
+    userPool: userPool,
+});
+
+const apiAuthFunction = new cdk.aws_lambda.Function(catSimAuthencation, 'Api Auth Function', {
+    runtime: cdk.aws_lambda.Runtime.NODEJS_20_X,
+    code: cdk.aws_lambda.Code.fromAsset(path.join(__dirname, '/api-auth-lambda')),
+    handler: 'index.handler',
+    timeout: cdk.Duration.seconds(10),
+    environment: {
+        "USER_POOL_ID": userPool.userPoolId,
+        "CLIENT_ID": userPoolClient.userPoolClientId,
+    },
+});
+
+new cdk.aws_logs.LogGroup(catSimAuthencation, 'Api Auth LogGroup', {
+    logGroupName: `/aws/lambda/${apiAuthFunction.functionName}`,
+    retention: cdk.aws_logs.RetentionDays.ONE_DAY,
+    removalPolicy: cdk.RemovalPolicy.DESTROY,
+});
+
+const apiChatFunction = new cdk.aws_lambda.Function(catSimApi, 'Api Function', {
     runtime: cdk.aws_lambda.Runtime.NODEJS_20_X,
     code: cdk.aws_lambda.Code.fromAsset(path.join(__dirname, './api-lambda')),
     handler: 'index.handler',
@@ -47,7 +90,7 @@ const apiFunction = new cdk.aws_lambda.Function(catSimApi, 'Api Function', {
     },
 });
 
-apiFunction.role?.attachInlinePolicy(new cdk.aws_iam.Policy(catSimApi, 'Bedrock policy for api', {
+apiChatFunction.role?.attachInlinePolicy(new cdk.aws_iam.Policy(catSimApi, 'Bedrock policy for api', {
     statements: [new cdk.aws_iam.PolicyStatement({
         effect: cdk.aws_iam.Effect.ALLOW,
         actions: ["bedrock:InvokeModel"],
@@ -55,7 +98,7 @@ apiFunction.role?.attachInlinePolicy(new cdk.aws_iam.Policy(catSimApi, 'Bedrock 
     }),],
 }));
 
-apiFunction.role?.attachInlinePolicy(new cdk.aws_iam.Policy(catSimApi, 'Dynamo DB policy for api', {
+apiChatFunction.role?.attachInlinePolicy(new cdk.aws_iam.Policy(catSimApi, 'Dynamo DB policy for api', {
     statements: [new cdk.aws_iam.PolicyStatement({
         effect: cdk.aws_iam.Effect.ALLOW,
         actions: ["dynamodb:Query", "dynamodb:PutItem"],
@@ -64,22 +107,29 @@ apiFunction.role?.attachInlinePolicy(new cdk.aws_iam.Policy(catSimApi, 'Dynamo D
 }));
 
 new cdk.aws_logs.LogGroup(catSimApi, 'Api LogGroup', {
-    logGroupName: `/aws/lambda/${apiFunction.functionName}`,
+    logGroupName: `/aws/lambda/${apiChatFunction.functionName}`,
     retention: cdk.aws_logs.RetentionDays.ONE_DAY,
     removalPolicy: cdk.RemovalPolicy.DESTROY,
 });
 
-const api = new cdk.aws_apigateway.LambdaRestApi(catSimInterface, 'Api Gateway', {
-    handler: apiFunction,
-    proxy: false,
-});
-api.root.addResource('api').addResource('{proxy+}', {
+const api = new cdk.aws_apigateway.RestApi(catSimApi, 'Api for cat sim');
+const apiRoot = api.root.addResource('api');
+const apiChat = apiRoot.addResource('chat', {
     defaultCorsPreflightOptions: {
         allowOrigins: ['*'],
         allowMethods: ['POST', 'OPTIONS'],
         allowHeaders: ['Content-Type', 'X-Amz-Date', 'Authorization', 'X-Api-Key', 'X-Amz-Security-Token'],
     },
-}).addMethod('ANY');
+});
+apiChat.addMethod('ANY', new cdk.aws_apigateway.LambdaIntegration(apiChatFunction));
+const apiUserAuth = apiRoot.addResource('auth', {
+    defaultCorsPreflightOptions: {
+        allowOrigins: ['*'],
+        allowMethods: ['POST', 'OPTIONS'],
+        allowHeaders: ['Content-Type', 'X-Amz-Date', 'Authorization', 'X-Api-Key', 'X-Amz-Security-Token'],
+    },
+});
+apiUserAuth.addMethod('ANY', new cdk.aws_apigateway.LambdaIntegration(apiAuthFunction));
 
 const dist = new cdk.aws_cloudfront.Distribution(catSimInterface, "Distribution for Site", {
     defaultRootObject: 'index.html',
@@ -121,25 +171,3 @@ new cdk.CfnOutput(catSim, 'CloudfrontDistributionUrl', {
 new cdk.CfnOutput(catSim, 'CloudfrontDistributionID', {
     value: dist.distributionId,
 });
-
-const userPool = new cdk.aws_cognito.UserPool(catSimAuthencation, 'User pool for auth', {
-    accountRecovery: cdk.aws_cognito.AccountRecovery.EMAIL_ONLY,
-    autoVerify: { email: true },
-    deletionProtection: true,
-    deviceTracking: {
-        deviceOnlyRememberedOnUserPrompt: true,
-        challengeRequiredOnNewDevice: true,
-    },
-    email: cdk.aws_cognito.UserPoolEmail.withCognito(),
-    selfSignUpEnabled: true,
-    mfa: cdk.aws_cognito.Mfa.OPTIONAL,
-    userVerification: {
-        emailSubject: 'Verify your email for cat messenger!',
-        emailBody: 'Thanks for signing up to cat messenger! Use visit/click link below to varify your email\n <a href="{##Verify Email##}">{##Verify Email##}</a>',
-        emailStyle: cdk.aws_cognito.VerificationEmailStyle.LINK,
-    },
-    standardAttributes: {
-        preferredUsername: { required: true, mutable: false },
-        email: { required: true, mutable: false }
-    },
-})
