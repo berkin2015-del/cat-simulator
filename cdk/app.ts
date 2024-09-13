@@ -1,9 +1,8 @@
 import path from 'path';
-import * as crypto from 'crypto';
 import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 
-const catSim = new cdk.Stack(new cdk.App(), "Cat-Simulator", {});
+const catSim = new cdk.Stack(new cdk.App(), "Cat-Simulator", { env: { region: 'us-east-1' } });
 const catSimApi = new Construct(catSim, 'Cat Simulator Api');
 const catSimStore = new Construct(catSim, 'Cat Simulator Storage');
 const catSimInterface = new Construct(catSim, 'Cat Simulator Interface');
@@ -145,6 +144,15 @@ const dist = new cdk.aws_cloudfront.Distribution(catSimInterface, "Distribution 
         origin: cdk.aws_cloudfront_origins.S3BucketOrigin.withOriginAccessControl(websiteBucket),
         viewerProtocolPolicy: cdk.aws_cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         allowedMethods: cdk.aws_cloudfront.AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
+        edgeLambdas: [{
+            functionVersion: new cdk.aws_cloudfront.experimental.EdgeFunction(catSimInterface, 'Path Rewrite for Website Bucket', {
+                handler: 'index.handler',
+                runtime: cdk.aws_lambda.Runtime.NODEJS_18_X,
+                code: cdk.aws_lambda.Code.fromAsset(path.join(__dirname, 'path-rewrite-lambda')),
+                logRetention: cdk.aws_logs.RetentionDays.ONE_DAY,
+            }).currentVersion,
+            eventType: cdk.aws_cloudfront.LambdaEdgeEventType.ORIGIN_REQUEST,
+        }]
     },
     additionalBehaviors: {
         '/api/*': {
@@ -156,20 +164,6 @@ const dist = new cdk.aws_cloudfront.Distribution(catSimInterface, "Distribution 
             allowedMethods: cdk.aws_cloudfront.AllowedMethods.ALLOW_ALL,
         }
     },
-    errorResponses: [
-        {
-            httpStatus: 404,
-            responseHttpStatus: 404,
-            responsePagePath: '/index.html',
-            ttl: cdk.Duration.days(1),
-        },
-        {
-            httpStatus: 403,
-            responseHttpStatus: 403,
-            responsePagePath: '/index.html',
-            ttl: cdk.Duration.days(1),
-        }
-    ]
 });
 
 new cdk.CfnOutput(catSim, 'CloudfrontDistributionUrl', {
