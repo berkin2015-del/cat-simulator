@@ -1,4 +1,5 @@
 import path from 'path';
+import * as crypto from 'crypto';
 import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 
@@ -50,7 +51,7 @@ const userPool = new cdk.aws_cognito.UserPool(catSimAuthencation, 'User pool for
     mfa: cdk.aws_cognito.Mfa.OPTIONAL,
     userVerification: {
         emailSubject: 'Verify your email for cat messenger!',
-        emailBody: 'Thanks for signing up to cat messenger! Use visit/click link below to varify your email\n <a href="{##Verify Email##}">{##Verify Email##}</a>',
+        emailBody: 'Thanks for signing up to cat messenger! Visit/click the link below to varify your email\n <a href="{##Verify Email##}">here</a>',
         emailStyle: cdk.aws_cognito.VerificationEmailStyle.LINK,
     },
     standardAttributes: {
@@ -59,8 +60,15 @@ const userPool = new cdk.aws_cognito.UserPool(catSimAuthencation, 'User pool for
     },
 });
 
-const userPoolClient = new cdk.aws_cognito.UserPoolClient(catSimAuthencation, 'Cat Sim Auth Api Client', {
-    userPool: userPool,
+// userPool.addDomain('User Pool Domain', { cognitoDomain: { domainPrefix: crypto.createHash('md5').update(catSim.account + catSim.stackId.replace('-', '')).digest("hex") } });
+const userPoolClient = userPool.addClient('User Pool Client', {
+    authFlows: {
+        adminUserPassword: false,
+        userSrp: false,
+        userPassword: true,
+        custom: false,
+    },
+    generateSecret: false,
 });
 
 const apiAuthFunction = new cdk.aws_lambda.Function(catSimAuthencation, 'Api Auth Function', {
