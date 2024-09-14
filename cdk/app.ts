@@ -145,11 +145,10 @@ const dist = new cdk.aws_cloudfront.Distribution(catSimInterface, "Distribution 
         viewerProtocolPolicy: cdk.aws_cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         allowedMethods: cdk.aws_cloudfront.AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
         edgeLambdas: [{
-            functionVersion: new cdk.aws_cloudfront.experimental.EdgeFunction(catSimInterface, 'Path Rewrite for Website Bucket', {
+            functionVersion: new cdk.aws_cloudfront.experimental.EdgeFunction(catSimInterface, 'url remapping', {
                 handler: 'index.handler',
-                runtime: cdk.aws_lambda.Runtime.NODEJS_18_X,
-                code: cdk.aws_lambda.Code.fromAsset(path.join(__dirname, 'path-rewrite-lambda')),
-                logRetention: cdk.aws_logs.RetentionDays.ONE_DAY,
+                runtime: cdk.aws_lambda.Runtime.NODEJS_LATEST,
+                code: cdk.aws_lambda.Code.fromAsset(path.join(__dirname, 'url-rewrite'))
             }).currentVersion,
             eventType: cdk.aws_cloudfront.LambdaEdgeEventType.ORIGIN_REQUEST,
         }]

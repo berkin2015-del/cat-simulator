@@ -37,7 +37,8 @@
     ]
   },
   "include": [
-    "src"
+    "src",
+    "cdk"
   ],
   "exclude": [
     "node_modules",
