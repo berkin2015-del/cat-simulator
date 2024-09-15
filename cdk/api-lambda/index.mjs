@@ -100,9 +100,9 @@ export const handler = async (event) => {
             return response
         };
         try {
-            await putNewMessageToChat(chatId, bedrockUserMessage, false);
+            await putNewMessageToChat(chatId, bedrockUserMessage);
             console.log('User message inserted');
-            await putNewMessageToChat(chatId, bedrockResponseAssistantMessage, true);
+            await putNewMessageToChat(chatId, bedrockResponseAssistantMessage);
             console.log('Assistant message inserted');
         } catch (error) {
             console.error(error)

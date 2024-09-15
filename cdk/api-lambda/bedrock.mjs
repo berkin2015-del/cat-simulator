@@ -24,7 +24,6 @@ The format of the list of soundtracks is as follows:
 
 The list of soundtracks available is as follows:
 \`\`\`
-\
 "meow_01": "normal meow, feels like looking up",
 "meow_02": "normal meow, higher pitch",
 "meow_03": "little cat purr",

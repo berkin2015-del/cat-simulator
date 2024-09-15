@@ -13,6 +13,7 @@ Expected Message Object
     if no sender or invalid sender, set to user
 }
 */
+
 export class Message {
     chatId;
     timestamp;
@@ -58,7 +59,8 @@ export const getPastMessagesFromChatId = async (chatId) => {
     return items;
 };
 
-export const putNewMessageToChat = async (chatId, message, isAssistant) => {
+export const putNewMessageToChat = async (chatId, message) => {
+    const isAssistant = message.role === 'assistant' ? true : false
     const client = new DynamoDBClient();
     const response = await client.send(new PutItemCommand({
         TableName: process.env.CHAT_TABLE_NAME,
@@ -73,14 +75,19 @@ export const putNewMessageToChat = async (chatId, message, isAssistant) => {
     return response
 };
 
+// TODO: Delete Chat
 // export const deleteChat = async (chatId)
 
 // testing plain
-// let chatId = '2c23fe40-ca04-43f8-97a3-a77a746e92f1'; 
-// let count = 1
-// while (true) {
-//     console.log(await putNewMessageToChat(chatId, 'Message' + count, 'user'));
-//     count++;
-// }
-// console.log('hi')
-// console.log(await getPastMessagesFromChatId(chatId))
+// let chatId = '2c23fe40-ca04-43f8-97a3-a77a746e92f1';
+// let response = await putNewMessageToChat(chatId, {
+//     role: 'assistant',
+//     toolResult: {
+//         toolUseId: 'abcdefg',
+//         content: [{ json: { message: 'hi', soundtracks: ['meow'] } }]
+//     },
+//     content: [{ text: { message: 'hi', soundtracks: ['meow'] }.message }]
+// }, false);
+
+// let response2 = await getPastMessagesFromChatId(chatId);
+// console.log(JSON.stringify(response2))
