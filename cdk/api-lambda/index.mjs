@@ -2,30 +2,29 @@ import { invokeBedrock, userMessagify } from "./bedrock.mjs";
 import { getPastMessagesFromChatId, putNewMessageToChat, updateChatMessageTTL } from "./dynamo.mjs";
 
 export const handler = async (event) => {
-    console.log(event)
-
-    let response = {
-        statusCode: 200,
-        headers: {
-            "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*",
-        },
-        body: JSON.stringify({ message: "Hello, World!" }),
-    };
-
-    const path = event.path;
-    if (path !== '/api/chat') {
-        return response;
-    };
-
-    const rawRequestBody = event.body;
-    if (rawRequestBody === null) {
-        response.statusCode = 400;
-        response.body = JSON.stringify({ message: "Missing Body Content" })
-        return response;
-    };
-
     try {
+        console.log(event)
+
+        let response = {
+            statusCode: 200,
+            headers: {
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*",
+            },
+            body: JSON.stringify({ message: "Hello, World!" }),
+        };
+
+        const path = event.path;
+        if (path !== '/api/chat') {
+            return response;
+        };
+
+        const rawRequestBody = event.body;
+        if (rawRequestBody === null) {
+            response.statusCode = 400;
+            response.body = JSON.stringify({ message: "Missing Body Content" })
+            return response;
+        };
 
         // Request Precheck
         let requestBody;
@@ -61,17 +60,17 @@ export const handler = async (event) => {
         const newMessage = requestBody.message ? requestBody.message : 'hi'
 
         // Get old chat log
-        let pastMessagesRecord;
+        let pastMessagesRecords;
         let pastMessages = [];
         try {
-            pastMessagesRecord = await getPastMessagesFromChatId(chatId);
-            console.log('Got From Dynamo\n', JSON.stringify(pastMessagesRecord));
-            pastMessagesRecord.forEach(record => {
+            pastMessagesRecords = await getPastMessagesFromChatId(chatId);
+            console.log('Got From Dynamo\n', JSON.stringify(pastMessagesRecords));
+            pastMessagesRecords.forEach(record => {
                 if (record.message) {
                     pastMessages.push(record.message);
                 };
             });
-            console.log('Got Pass Messages', JSON.stringify(pastMessagesRecord));
+            console.log('Got Pass Messages', JSON.stringify(pastMessagesRecords));
         } catch (error) {
             console.error(error)
             response.body = JSON.stringify({
@@ -111,18 +110,22 @@ export const handler = async (event) => {
         const currentUnixEpoch = Math.floor(currentDate / 1000);
         const newTTLUnixEpoch = Math.floor(newTTL / 1000);
 
-        // Write new Messages to chat log
+        // Write new Messages to chat log and update ttl for old ones
         try {
-            const taskPromises = [];
-            taskPromises.push(
+            const dynamoJobPromises = [];
+            dynamoJobPromises.push(
                 putNewMessageToChat(chatId, bedrockUserMessage, currentUnixEpoch, newTTLUnixEpoch)
             );
-            taskPromises.push(
+            dynamoJobPromises.push(
                 putNewMessageToChat(chatId, bedrockResponseAssistantMessage, currentUnixEpoch, newTTLUnixEpoch)
             );
-            console.log('User message inserted');
-            await Promise.all(taskPromises)
-            console.log('Assistant message inserted');
+            pastMessagesRecords.forEach((record) => {
+                dynamoJobPromises.push(
+                    updateChatMessageTTL(chatId, record.timestamp, newTTLUnixEpoch));
+            });
+            console.log("Dynamo DB Update Invoked")
+            await Promise.all(dynamoJobPromises);
+            console.log("Dynamo DB Update conpleted");
         } catch (error) {
             console.error(error)
             response.body = JSON.stringify({
@@ -131,24 +134,6 @@ export const handler = async (event) => {
             });
             return response;
         };
-
-        // Update old chat records TTL
-        try {
-            const taskPromises = [];
-            pastMessagesRecord.forEach((record) => {
-                taskPromises.push(updateChatMessageTTL(chatId, record.timestamp, newTTLUnixEpoch));
-            });
-            console.log("TTL Update Invoked");
-            await Promise.all(taskPromises);
-            console.log("All TTL Update conplete");
-        } catch (error) {
-            console.error(error)
-            response.body = JSON.stringify({
-                message: '~Meow! ! !!',
-                soundtracks: ["meow_01"]
-            });
-            return response;
-        }
 
         // Response request
         try {
@@ -161,11 +146,11 @@ export const handler = async (event) => {
         } catch (error) {
             console.error(error)
             response.body = JSON.stringify({
-                message: '~Meow!!! !',
+                message: '~Meow! ! !!',
                 soundtracks: ["meow_01"]
             });
             return response;
-        }
+        };
 
         // Global Catch
     } catch (error) {

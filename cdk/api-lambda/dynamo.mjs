@@ -93,9 +93,6 @@ export const putNewMessageToChat = async (chatId, message, timestamp, ttl) => {
 
 export const updateChatMessageTTL = async (chatId, timestamp, newTTL) => {
     const client = new DynamoDBClient();
-    // const docClient = new DynamoDBDocumentClient();
-    // docClient.from(client);
-    // const respond = docClient.send(new UpdateCommand({
     const respond = await client.send(new UpdateItemCommand({
         TableName: process.env.CHAT_TABLE_NAME,
         Key: marshall({
