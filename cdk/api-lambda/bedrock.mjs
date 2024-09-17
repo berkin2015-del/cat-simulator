@@ -63,7 +63,18 @@ const tools = [
                         "soundtracks": {
                             "type": "array",
                             "items": {
-                                "type": "string"
+                                "type": "string",
+                                "enum": [
+                                    "meow_01",
+                                    "meow_02",
+                                    "meow_03",
+                                    "sad_meow_01",
+                                    "sad_meow_02",
+                                    "sad_meow_03",
+                                    "purr_01",
+                                ],
+                                "minItems": 0,
+                                "maxItems": 10
                             }
                         }
                     },

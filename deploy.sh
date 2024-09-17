@@ -1,3 +1,5 @@
+#! /bin/bash
+
 echo 'building react app 🐒'
 npm run build
 

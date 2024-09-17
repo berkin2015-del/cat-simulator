@@ -7,7 +7,7 @@ export const handler = (e, c, cb) => {
     if (r.uri.match(/^.*\/(.*\..*)\.*$/)) {
         return cb(null, r);
     };
-    r.uri = '/index.html'//(r.uri.endsWith('/') ? r.uri : r.uri + '/').replace(/\/$/, '\/index.html');
+    r.uri = '/index.html';//(r.uri.endsWith('/') ? r.uri : r.uri + '/').replace(/\/$/, '\/index.html');
     console.log('new uri: ', r.uri);
     return cb(null, r)
 }

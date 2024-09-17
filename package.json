@@ -4,7 +4,7 @@
   "private": false,
   "description": "meow",
   "scripts": {
-    "build": "react-scripts build",
+    "build": "GENERATE_SOURCEMAP=false react-scripts build",
     "dev": "react-scripts start",
     "cdk": "cdk"
   },

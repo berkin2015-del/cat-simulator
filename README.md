@@ -6,7 +6,7 @@ React js combined with CDK for AWS.
 
 This project is a bit diffrent from the others, everything is held together by hopes and dreams. Combined bothe React JS and CDK in the same environment. What could go wrong.
 
-Make sure you have both node js and cdk install.
+Make sure you have both node js, aws cdk, aws cli, jq installed.
 
 ```bash
 npm i
