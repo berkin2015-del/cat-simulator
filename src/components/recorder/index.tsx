@@ -1,15 +1,7 @@
 import { fetchApi } from "../api";
-import { chatId as storedChatId, setChatId } from "../settings";
 
-const chatIdRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
-export const queryApi = async (overideApiUrl: string, message: string) => {
-    let chatId = storedChatId;
-    if (!chatId || !chatIdRegex.test(chatId)) {
-        chatId = crypto.randomUUID();
-        console.warn('Recorder: Invalid Chat Id found in storage. Setting to: \n', chatId);
-        await setChatId(chatId);
-    }
+export const queryApi = async (overideApiUrl: string, message: string, chatId: string) => {
     let response = await fetchApi('chat', {
         method: 'POST',
         headers: { "Content-Type": "application/json", },

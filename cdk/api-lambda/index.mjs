@@ -74,7 +74,7 @@ export const handler = async (event) => {
                 message: '~Meow!!!!',
                 soundtracks: ["meow_01"]
             });
-            return response
+            return response;
         };
         let bedrockUserMessage = userMessagify(newMessage)
         let bedrockResponseAssistantMessage;
@@ -97,7 +97,7 @@ export const handler = async (event) => {
                 message: '~Meow! !!!',
                 soundtracks: ["meow_01"]
             });
-            return response
+            return response;
         };
         try {
             await putNewMessageToChat(chatId, bedrockUserMessage);
@@ -110,7 +110,7 @@ export const handler = async (event) => {
                 message: '~Meow!! !!',
                 soundtracks: ["meow_01"]
             });
-            return response
+            return response;
         };
         try {
             response.body = JSON.stringify({
@@ -118,14 +118,14 @@ export const handler = async (event) => {
                 message: bedrockOutput.message,
                 soundtracks: bedrockOutput.soundtracks,
             });
-            return response;
+            return response;;
         } catch (error) {
             console.error(error)
             response.body = JSON.stringify({
                 message: '~Meow! ! !!',
                 soundtracks: ["meow_01"]
             });
-            return response
+            return response;
         }
 
     } catch (error) {
@@ -134,7 +134,7 @@ export const handler = async (event) => {
             message: '~Meow! ! ! !',
             soundtracks: ["meow_01"]
         });
-        return response
+        return response;
     };
 
 };
