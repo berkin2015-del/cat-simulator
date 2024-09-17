@@ -59,7 +59,7 @@ export const getPastMessagesFromChatId = async (chatId) => {
     return items;
 };
 
-export const putNewMessageToChat = async (chatId, message) => {
+export const putNewMessageToChat = async (chatId, message, timestamp, ttl) => {
     const isAssistant = message.role === 'assistant' ? true : false
     const client = new DynamoDBClient();
     const response = await client.send(new PutItemCommand({
@@ -68,12 +68,19 @@ export const putNewMessageToChat = async (chatId, message) => {
         Item: marshall(new Message({
             chatId: chatId,
             message: message,
-            timestamp: isAssistant ? Math.floor(new Date(new Date().setSeconds(new Date().getSeconds() + 3)).getTime() / 1000) : Math.floor(new Date().getTime() / 1000)
+            timestamp: isAssistant ? timestamp + 1 : timestamp,
+            ttl: ttl
         }).out()),
     }));
     console.log(response);
     return response
 };
+
+export const updateChatTTL = async (chatId, timestamp, newTTL) => {
+    const client = new DynamoDBClient();
+    // const 
+
+}
 
 // TODO: Delete Chat
 // export const deleteChat = async (chatId)

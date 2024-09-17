@@ -28,3 +28,15 @@ DIST_ID=$(aws cloudformation describe-stacks --stack-name Cat-Simulator | jq '.S
 echo 'using' $DIST_ID
 aws cloudfront create-invalidation --distribution-id $DIST_ID --paths '/index.html' '/settings'
 ```
+
+## TODO:
+- Batch update Chat TTL
+- Merge Assistant and User Chat to one Dynamo DB Record
+- Add Chat Export to API
+- Fix semi broken api dynamo DB Calls
+- Look into streamming data instead of static whole push
+- Add User Functionality
+- Add User/Chat pair
+- Add Authorization to API
+- Use Google API for STT
+- Possible add machinal control of the cat
