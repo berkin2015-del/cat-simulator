@@ -4,7 +4,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 import { Recorder } from './pages/recorder';
 import { Settings } from './pages/settings';
-
+import { PageSelector } from './components/page-selector';
 
 import './index.css';
 
@@ -20,5 +20,6 @@ root.render(
         <Route path="/settings" element={<Settings />} />
       </Routes>
     </BrowserRouter>
+    <PageSelector />
   </React.StrictMode>
 );
