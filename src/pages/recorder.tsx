@@ -43,7 +43,7 @@ export const Recorder = () => {
         soundtracks: string[]
     }) => {
         console.log('Recorder: Got Response\n' + JSON.stringify(response));
-        setApiResponseMessage(response.message);
+        setApiResponseMessage(response.message.replace(/\n/g, '<br />'));
         for (const trackId of response.soundtracks) {
             await playAudio(trackId);
         };

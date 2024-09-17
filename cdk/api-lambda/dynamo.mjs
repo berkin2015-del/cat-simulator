@@ -1,5 +1,4 @@
 import { DynamoDBClient, QueryCommand, PutItemCommand, UpdateItemCommand } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb"
 
 /*
@@ -22,9 +21,9 @@ export class Message {
     ttl;
     constructor(item) {
         this.chatId = item.chatId;
-        this.timestamp = !isNaN(new Date(item.timestamp).getTime()) ? new Date(item.timestamp).getTime() : new Date().getTime();
+        this.timestamp = item.timestamp;
         this.message = item.message ? item.message : {};
-        this.ttl = !isNaN(new Date(item.ttl).getTime()) ? new Date(item.ttl).getTime() : Math.floor(new Date(new Date().setDate(new Date().getDate() + 1)).getTime() / 1000);
+        this.ttl = item.ttl
     }
     out = () => {
         return {
@@ -48,7 +47,7 @@ export const getPastMessagesFromChatId = async (chatId) => {
             },
         },
     }));
-    console.log('From Dynamo DB\n', JSON.stringify(response))
+    // console.log('Past Messages From Dynamo DB\n', JSON.stringify(response));
     let items = [];
 
     for (let item of response.Items) {
@@ -73,7 +72,7 @@ export const putNewMessageToChat = async (chatId, message, timestamp, ttl) => {
             ttl: ttl
         }).out()),
     }));
-    console.log(response);
+    // console.log('Put New Message to Dynamo DB Resault\n', response);
     return response
 };
 
@@ -107,7 +106,7 @@ export const updateChatMessageTTL = async (chatId, timestamp, newTTL) => {
         },
         UpdateExpression: "SET #ttlAttr = :newTTL",
     }));
-    console.log(respond)
+    // console.log('Update Messages in Dynamo DB Resault:\n', respond);
     return respond
 }
 

@@ -64,13 +64,13 @@ export const handler = async (event) => {
         let pastMessages = [];
         try {
             pastMessagesRecords = await getPastMessagesFromChatId(chatId);
-            console.log('Got From Dynamo\n', JSON.stringify(pastMessagesRecords));
+            // console.log('Got From Dynamo\n', JSON.stringify(pastMessagesRecords));
             pastMessagesRecords.forEach(record => {
                 if (record.message) {
                     pastMessages.push(record.message);
                 };
             });
-            console.log('Got Pass Messages', JSON.stringify(pastMessagesRecords));
+            // console.log('Got Past Messages From DynamoDB\n', JSON.stringify(pastMessagesRecords));
         } catch (error) {
             console.error(error)
             response.body = JSON.stringify({

@@ -1,5 +1,4 @@
 import { BedrockRuntimeClient, ConverseCommand } from "@aws-sdk/client-bedrock-runtime";
-import { text } from "stream/consumers";
 
 const systemPrompt = `You are a cat, but not a normal one.
 You are a cat with a big brain knowing a lot and can think a lot.
@@ -111,7 +110,7 @@ export const invokeBedrock = async (newMessage, pastMessages) => {
     });
     const response = await bedrockClient.send(command);
     const output = JSON.parse(JSON.stringify(response.output, null, 2))
-    console.log("Got Respond\n", JSON.stringify(output));
+    console.log("Got Bedrock  Respond\n", JSON.stringify(output));
     return output
     ///
     // let outputText = JSON.parse(JSON.stringify(output.message)).content[0].text
