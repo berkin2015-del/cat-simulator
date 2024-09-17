@@ -1,5 +1,5 @@
 import { invokeBedrock, userMessagify } from "./bedrock.mjs";
-import { getPastMessagesFromChatId, putNewMessageToChat, updateChatTTL } from "./dynamo.mjs";
+import { getPastMessagesFromChatId, putNewMessageToChat, updateChatMessageTTL } from "./dynamo.mjs";
 
 export const handler = async (event) => {
     console.log(event)
@@ -107,15 +107,21 @@ export const handler = async (event) => {
         };
 
         const currentDate = new Date()
-        const newTTL = new Date(currentDate).setSeconds(currentDate.getSeconds() + 60 * 60 * 24 * 3) // New ttl for 3 days
+        const newTTL = new Date(currentDate).setSeconds(currentDate.getSeconds() + (60 * 60 * 24 * 3)) // New ttl for 3 days
         const currentUnixEpoch = Math.floor(currentDate / 1000);
         const newTTLUnixEpoch = Math.floor(newTTL / 1000);
 
         // Write new Messages to chat log
         try {
-            putNewMessageToChat(chatId, bedrockUserMessage, currentUnixEpoch, newTTLUnixEpoch);
+            const taskPromises = [];
+            taskPromises.push(
+                putNewMessageToChat(chatId, bedrockUserMessage, currentUnixEpoch, newTTLUnixEpoch)
+            );
+            taskPromises.push(
+                putNewMessageToChat(chatId, bedrockResponseAssistantMessage, currentUnixEpoch, newTTLUnixEpoch)
+            );
             console.log('User message inserted');
-            putNewMessageToChat(chatId, bedrockResponseAssistantMessage, currentUnixEpoch, newTTLUnixEpoch);
+            await Promise.all(taskPromises)
             console.log('Assistant message inserted');
         } catch (error) {
             console.error(error)
@@ -126,17 +132,23 @@ export const handler = async (event) => {
             return response;
         };
 
-        // try {
-        //     await updateChatMessageTTL(chatId, timestamp)
-        // } catch (error) {
-        //     console.error(error)
-        //     response.body = JSON.stringify({
-        //         message: '~Meow!! !!',
-        //         soundtracks: ["meow_01"]
-        //     });
-        //     return response;
-        // }
-
+        // Update old chat records TTL
+        try {
+            const taskPromises = [];
+            pastMessagesRecord.forEach((record) => {
+                taskPromises.push(updateChatMessageTTL(chatId, record.timestamp, newTTLUnixEpoch));
+            });
+            console.log("TTL Update Invoked");
+            await Promise.all(taskPromises);
+            console.log("All TTL Update conplete");
+        } catch (error) {
+            console.error(error)
+            response.body = JSON.stringify({
+                message: '~Meow! ! !!',
+                soundtracks: ["meow_01"]
+            });
+            return response;
+        }
 
         // Response request
         try {
@@ -149,7 +161,7 @@ export const handler = async (event) => {
         } catch (error) {
             console.error(error)
             response.body = JSON.stringify({
-                message: '~Meow! ! !!',
+                message: '~Meow!!! !',
                 soundtracks: ["meow_01"]
             });
             return response;

@@ -1,4 +1,5 @@
-import { DynamoDBClient, QueryCommand, PutItemCommand } from "@aws-sdk/client-dynamodb";
+import { DynamoDBClient, QueryCommand, PutItemCommand, UpdateItemCommand } from "@aws-sdk/client-dynamodb";
+import { DynamoDBDocumentClient, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb"
 
 /*
@@ -76,15 +77,6 @@ export const putNewMessageToChat = async (chatId, message, timestamp, ttl) => {
     return response
 };
 
-export const updateChatTTL = async (chatId, timestamp, newTTL) => {
-    const client = new DynamoDBClient();
-    // const 
-
-}
-
-// TODO: Delete Chat
-// export const deleteChat = async (chatId)
-
 // testing plain
 // let chatId = '2c23fe40-ca04-43f8-97a3-a77a746e92f1';
 // let response = await putNewMessageToChat(chatId, {
@@ -98,3 +90,34 @@ export const updateChatTTL = async (chatId, timestamp, newTTL) => {
 
 // let response2 = await getPastMessagesFromChatId(chatId);
 // console.log(JSON.stringify(response2))
+
+export const updateChatMessageTTL = async (chatId, timestamp, newTTL) => {
+    const client = new DynamoDBClient();
+    // const docClient = new DynamoDBDocumentClient();
+    // docClient.from(client);
+    // const respond = docClient.send(new UpdateCommand({
+    const respond = await client.send(new UpdateItemCommand({
+        TableName: process.env.CHAT_TABLE_NAME,
+        Key: marshall({
+            chatId: chatId,
+            timestamp: timestamp,
+        }),
+        ExpressionAttributeNames: {
+            '#ttlAttr': 'ttl',
+        },
+        ExpressionAttributeValues: {
+            ':newTTL': { S: newTTL.toString() },
+        },
+        UpdateExpression: "SET #ttlAttr = :newTTL",
+    }));
+    console.log(respond)
+    return respond
+}
+
+// test
+// let respond = updateChatMessageTTL('ed0dab52-040c-4107-8b22-606165ff2fe7', 1726570610, 172689900)
+// console.log(respond);
+
+
+// TODO: Delete Chat
+// export const deleteChat = async (chatId)

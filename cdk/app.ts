@@ -91,7 +91,7 @@ const apiChatFunction = new cdk.aws_lambda.Function(catSimApi, 'Api Function', {
     runtime: cdk.aws_lambda.Runtime.NODEJS_20_X,
     code: cdk.aws_lambda.Code.fromAsset(path.join(__dirname, './api-lambda')),
     handler: 'index.handler',
-    timeout: cdk.Duration.seconds(10),
+    timeout: cdk.Duration.seconds(30),
     environment: {
         CHAT_TABLE_NAME: chatTable.tableName,
     },
@@ -108,7 +108,7 @@ apiChatFunction.role?.attachInlinePolicy(new cdk.aws_iam.Policy(catSimApi, 'Bedr
 apiChatFunction.role?.attachInlinePolicy(new cdk.aws_iam.Policy(catSimApi, 'Dynamo DB policy for api', {
     statements: [new cdk.aws_iam.PolicyStatement({
         effect: cdk.aws_iam.Effect.ALLOW,
-        actions: ["dynamodb:Query", "dynamodb:PutItem"],
+        actions: ["dynamodb:Query", "dynamodb:PutItem", "dynamodb:UpdateItem"],
         resources: [chatTable.tableArn],
     }),],
 }));
