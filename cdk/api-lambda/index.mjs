@@ -22,7 +22,13 @@ export const handler = async (event) => {
 
         // Get old chat log
         const pastMessagesRecords = await getPastMessagesFromChatId(requestBody.chatId);
-        const pastMessages = pastMessagesRecords.map(record => record.message);
+        const pastMessages = (pastMessagesRecords.map(record => {
+            if (record.message.role === 'assistant') {
+                record.message.content = [{ text: record.message.toolResult.content[0].json.message }];
+                return record.message;
+            }
+            return record.message;
+        }));
 
         // Call Bedrock for response
         // bedrock doesn't allow empty message, don't know why it worked before but not now
@@ -35,8 +41,7 @@ export const handler = async (event) => {
             toolResult: {
                 toolUseId: bedrockResponsd.message.content[0].toolUse.toolUseId,
                 content: [{ json: bedrockOutput }]
-            },
-            content: [{ text: bedrockOutput.message }]
+            }
         };
 
         // Form Store Info
@@ -49,12 +54,8 @@ export const handler = async (event) => {
         const dynamoJobPromises = [
             putNewMessageToChat(requestBody.chatId, bedrockUserMessage, currentUnixEpoch, newTTLUnixEpoch),
             putNewMessageToChat(requestBody.chatId, bedrockResponseAssistantMessage, currentUnixEpoch, newTTLUnixEpoch),
-            ...pastMessagesRecords.map((r) => { updateChatMessageTTL(requestBody.chatId, r.timestamp, newTTLUnixEpoch) })
+            ...pastMessagesRecords.map((r) => updateChatMessageTTL(requestBody.chatId, r.timestamp, newTTLUnixEpoch))
         ];
-
-        console.log("Dynamo DB Update Invoked")
-        await Promise.all(dynamoJobPromises);
-        console.log("Dynamo DB Update conpleted");
 
         // Response request
         response.body = JSON.stringify({
@@ -63,13 +64,17 @@ export const handler = async (event) => {
             soundtracks: bedrockOutput.soundtracks,
         });
 
+        // I love async, but I want to burn it to hell
+        console.log("Dynamo DB Update Invoked")
+        await Promise.all(dynamoJobPromises)
+        console.log("Dynamo DB Update conpleted");
+        return response;
+
         // Global Catch
     } catch (error) {
         console.error(error)
         response.statusCode = 400
         return response;
     };
-
-    return response
 
 };
