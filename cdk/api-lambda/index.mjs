@@ -66,8 +66,9 @@ export const handler = async (event) => {
 
         // I love async, but I want to burn it to hell
         console.log("Dynamo DB Update Invoked")
-        await Promise.all(dynamoJobPromises)
-        console.log("Dynamo DB Update conpleted");
+        const jobs = await Promise.all(dynamoJobPromises)
+        console.log("Dynamo DB Update conpleted.");
+        console.log("Total Message Count for chat\n", requestBody.chatId, 'is :\n', jobs.length);
         return response;
 
         // Global Catch
