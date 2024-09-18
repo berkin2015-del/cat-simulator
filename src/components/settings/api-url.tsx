@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { setApiUrl, apiUrl } from '.'
+import { setApiUrl, getApiUrl } from '.'
 
 export const Settings_ApiUrl = () => {
 
-    const [_value, _setValue] = useState(apiUrl);
+    const [_value, _setValue] = useState(getApiUrl());
 
     const handleSet = () => {
         console.debug(`Settings: Set api to ${_value}`);

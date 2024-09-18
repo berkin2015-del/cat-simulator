@@ -1,5 +1,5 @@
 import { invokeBedrock, userMessagify } from "./bedrock.mjs";
-import { getPastMessagesFromChatId, putNewMessageToChat, updateChatMessageTTL } from "./dynamo.mjs";
+import { getChatRecords, putNewMessageToChat, updateChatMessageTTL } from "./dynamo.mjs";
 
 export const handler = async (event) => {
     console.log(event)
@@ -16,12 +16,12 @@ export const handler = async (event) => {
     try {
         const requestBody = JSON.parse(event.body);
         const chatIdRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-        if (!requestBody.message || !requestBody.chatId || !chatIdRegex.test(requestBody.chatId)) {
+        if (!requestBody.chatId || !chatIdRegex.test(requestBody.chatId)) {
             throw new Error("Invalid Request")
         }
 
         // Get old chat log
-        const pastMessagesRecords = await getPastMessagesFromChatId(requestBody.chatId);
+        const pastMessagesRecords = await getChatRecords(requestBody.chatId);
         const pastMessages = (pastMessagesRecords.map(record => {
             if (record.message.role === 'assistant') {
                 record.message.content = [{ text: record.message.toolResult.content[0].json.message }];

@@ -1,10 +1,10 @@
 import { useState } from "react";
 
-import { chatId, setChatId } from '.';
+import { getChatId, setChatId } from '.';
 
 export const Settings_ChatId = () => {
 
-    const [_value, _setValue] = useState(chatId);
+    const [_value, _setValue] = useState(getChatId());
 
     const handleSet = () => {
         console.debug(`Settings: Set Chat ID to ${_value}`);

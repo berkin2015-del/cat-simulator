@@ -1,9 +1,9 @@
 import urlJoin from "url-join";
 
-import { apiUrl } from './settings'
+import { getApiUrl } from './settings'
 
 export const fetchApi = async (path: string, fetchProps?: RequestInit, overideApiUrl?: string) => {
-    const fullUrl = urlJoin(overideApiUrl ? overideApiUrl : apiUrl, path);
+    const fullUrl = urlJoin(overideApiUrl ? overideApiUrl : getApiUrl(), path);
     console.debug('API: Fetching ' + fullUrl);
     try {
         const apiResponse = await fetch(fullUrl, fetchProps);

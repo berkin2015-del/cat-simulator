@@ -13,7 +13,7 @@ Expected Message Object
 
 const client = new DynamoDBClient();
 
-export const getPastMessagesFromChatId = async (chatId) => {
+export const getChatRecords = async (chatId) => {
     const response = await client.send(new QueryCommand({
         TableName: process.env.CHAT_TABLE_NAME,
         ScanIndexForward: true,

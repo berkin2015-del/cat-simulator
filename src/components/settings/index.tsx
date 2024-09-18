@@ -1,11 +1,12 @@
 import { settingSetter, settingGetter } from "./helper";
 
 
-export const apiUrl = settingGetter({
-    name: 'api_url',
-    defaultValue: '/api',
-});
-
+export const getApiUrl = () => {
+    return settingGetter({
+        name: 'api_url',
+        defaultValue: '/api',
+    })
+};
 export const setApiUrl = (value: string) => {
     settingSetter({
         name: 'api_url',
@@ -14,10 +15,12 @@ export const setApiUrl = (value: string) => {
 };
 
 
-export const allowEmptyMessage = settingGetter({
-    name: 'allow_empty_message',
-    defaultValue: 'false',
-}) === 'true';
+export const getAllowEmptyMessage = () => {
+    return settingGetter({
+        name: 'allow_empty_message',
+        defaultValue: 'false',
+    }) === 'true'
+};
 export const setAllowEmptyMessage = (value: boolean) => {
     settingSetter({
         name: 'allow_empty_message',
@@ -26,10 +29,12 @@ export const setAllowEmptyMessage = (value: boolean) => {
 };
 
 
-export const chatId = settingGetter({
-    name: 'chat_id',
-    defaultValue: '',
-});
+export const getChatId = () => {
+    return settingGetter({
+        name: 'chat_id',
+        defaultValue: crypto.randomUUID(),
+    })
+};
 export const setChatId = (value: string) => {
     settingSetter({
         name: 'chat_id',

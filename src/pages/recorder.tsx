@@ -11,7 +11,6 @@ const chatIdRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{1
 
 export const Recorder = () => {
 
-    const [localChatId, setLocalChatId] = useState('');
     const [isWriting, setIsWriting] = useState(false);
     const [message, setMessage] = useState("");
     const [apiResponseMessage, setApiResponseMessage] = useState('');
@@ -51,7 +50,7 @@ export const Recorder = () => {
         setFirstUse(false);
         setIsWriting(false);
         console.debug('Recorder: Recived \n' + message)
-        if (!settings.allowEmptyMessage && !message) {
+        if (!settings.getAllowEmptyMessage() && !message) {
             console.warn(`Recorder: Empty Message exiting.`);
             if (!apiResponseMessage) {
                 setFirstUse(true);
@@ -61,13 +60,13 @@ export const Recorder = () => {
             console.warn('Recorder: Allowed Empty Message')
         }
         setWaitingApi(true);
-        if (!chatIdRegex.test(settings.chatId)) {
-            const a = crypto.randomUUID();
-            console.warn('Recorder: Found Invalid Chat Id, ', settings.chatId, '. Setting to\n', a);
-            settings.setChatId(a);
+        if (!chatIdRegex.test(settings.getChatId())) {
+            const newChatId = crypto.randomUUID();
+            console.warn('Recorder: Found Invalid Chat Id, ', settings.getChatId(), '. Setting to\n', newChatId);
+            await settings.setChatId(newChatId);
         }
-        const apiResponse = await queryApi(overideApiUrl, message, settings.chatId);
-        setWaitingApi(false)
+        const apiResponse = await queryApi(overideApiUrl, message, settings.getChatId());
+        setWaitingApi(false);
         await processApiResponse(apiResponse);
         return;
     };

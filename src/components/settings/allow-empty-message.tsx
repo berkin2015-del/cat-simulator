@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { allowEmptyMessage, setAllowEmptyMessage } from ".";
+import { getAllowEmptyMessage, setAllowEmptyMessage } from ".";
 
 export const Settings_AllowEmptyMessage = () => {
 
-    const [_value, _setValue] = useState(allowEmptyMessage);
+    const [_value, _setValue] = useState(getAllowEmptyMessage());
 
     const handleSet = () => {
         console.debug(`Settings: Set Allow Empty Message to ${_value}`);
