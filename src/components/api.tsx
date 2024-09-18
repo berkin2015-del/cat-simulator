@@ -1,10 +1,10 @@
 import urlJoin from "url-join";
 
-import { apiUrl } from '../settings'
+import { apiUrl } from './settings'
 
 export const fetchApi = async (path: string, fetchProps?: RequestInit, overideApiUrl?: string) => {
     const fullUrl = urlJoin(overideApiUrl ? overideApiUrl : apiUrl, path);
-    console.log('API: Fetching ' + fullUrl);
+    console.debug('API: Fetching ' + fullUrl);
     try {
         const apiResponse = await fetch(fullUrl, fetchProps);
         if (!apiResponse.ok) {
@@ -13,7 +13,7 @@ export const fetchApi = async (path: string, fetchProps?: RequestInit, overideAp
         };
         try {
             const apiResponseBody = await apiResponse.json();
-            console.log('API: Response: \n' + JSON.stringify(apiResponseBody));
+            console.debug('API: Response: \n' + JSON.stringify(apiResponseBody));
             return apiResponseBody;
         } catch (error) {
             console.error("API: Response Parse Error\n" + (error as Error).message)

@@ -7,13 +7,13 @@ export const Settings_ChatId = () => {
     const [_value, _setValue] = useState(chatId);
 
     const handleSet = () => {
-        console.log(`Settings: Set Chat ID to ${_value}`);
+        console.debug(`Settings: Set Chat ID to ${_value}`);
         setChatId(_value);
     };
 
     const handleRandom = () => {
         const _value = crypto.randomUUID();
-        console.log(`Settings: Random Chat ID to ${_value}`);
+        console.debug(`Settings: Random Chat ID to ${_value}`);
         _setValue(_value);
     };
 
@@ -22,6 +22,7 @@ export const Settings_ChatId = () => {
             <td>Chat ID</td>
             <td>
                 <input
+                    name='chat-id'
                     onChange={(e) => {
                         _setValue(e.target.value);
                     }}

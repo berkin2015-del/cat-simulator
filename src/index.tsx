@@ -21,5 +21,5 @@ root.render(
       </Routes>
     </BrowserRouter>
     <PageSelector />
-  </React.StrictMode>
+  </React.StrictMode >
 );

@@ -6,7 +6,7 @@ export const Settings_ApiUrl = () => {
     const [_value, _setValue] = useState(apiUrl);
 
     const handleSet = () => {
-        console.log(`Settings: Set api to ${_value}`);
+        console.debug(`Settings: Set api to ${_value}`);
         setApiUrl(_value);
     };
 
@@ -15,6 +15,7 @@ export const Settings_ApiUrl = () => {
             <td>Api Url</td>
             <td>
                 <input
+                    name='api-url'
                     onChange={(e) => {
                         _setValue(e.target.value);
                     }}

@@ -19,7 +19,7 @@ export const queryApi = async (overideApiUrl: string, message: string, chatId: s
         response.message = 'Meow!! ~';
     }
     if (!response.hasOwnProperty('soundtracks')) {
-        console.warn('Recorder: Api response has no message');
+        console.warn('Recorder: Api response has no soundtracks');
         response.soundtracks = ['meow_01'];
     }
     return response;

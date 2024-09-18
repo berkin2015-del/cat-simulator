@@ -1,0 +1,15 @@
+.settings-table {
+    border-collapse: collapse;
+    margin: auto;
+}
+
+.settings-table td,
+.settings-table th {
+    border: 1px solid #000;
+    text-align: left;
+    padding: .5em;
+}
+
+.settings-table thead {
+    background-color: burlywood;
+}

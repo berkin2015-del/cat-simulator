@@ -6,7 +6,7 @@ export const Settings_AllowEmptyMessage = () => {
     const [_value, _setValue] = useState(allowEmptyMessage);
 
     const handleSet = () => {
-        console.log(`Settings: Set Allow Empty Message to ${_value}`);
+        console.debug(`Settings: Set Allow Empty Message to ${_value}`);
         setAllowEmptyMessage(_value);
     }
 

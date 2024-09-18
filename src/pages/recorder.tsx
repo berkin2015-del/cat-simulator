@@ -21,60 +21,54 @@ export const Recorder = () => {
     const [overideApiUrl, setOverideApiUrl] = useState('');
 
     useEffect(() => {
-        setLocalChatId(settings.chatId);
-        if (!localChatId || chatIdRegex.test(localChatId)) {
-            let newChatId = crypto.randomUUID();
-            console.warn('Recorder: Invalid chat id found in settings, setting to\n', newChatId);
-            settings.setChatId(newChatId);
-            setLocalChatId(newChatId);
-        }
-    }, []);
-
-    useEffect(() => {
         let queryStringApiUrl = searchParams.get("api_url");
         if (queryStringApiUrl) {
-            console.log("Recorder: Found api url in query strings\n" + queryStringApiUrl + '\n Overiding localStorage');
+            console.warn("Recorder: Found api url in query strings\n" + queryStringApiUrl + '\n Overiding localStorage');
             setOverideApiUrl(queryStringApiUrl);
-        };
+        }
     }, []);
 
     const processApiResponse = async (response: {
         message: string,
         soundtracks: string[]
     }) => {
-        console.log('Recorder: Got Response\n' + JSON.stringify(response));
+        console.debug('Recorder: Got Response\n' + JSON.stringify(response));
         setApiResponseMessage(response.message.replace(/\n/g, '<br />'));
         for (const trackId of response.soundtracks) {
             await playAudio(trackId);
-        };
+        }
         return;
     };
 
     const handlePawClick = async () => {
         if (!isWriting) {
-            console.log("Recorder: Start Writing");
-            setApiResponseMessage('');
+            console.debug("Recorder: Start Writing");
+            setMessage('');
             setIsWriting(true);
             return;
-        };
-        console.log("Recorder: Stopped Writing");
+        }
+        console.debug("Recorder: Stopped Writing");
         setFirstUse(false);
         setIsWriting(false);
-        console.log('Recorder: Recived \n' + message)
+        console.debug('Recorder: Recived \n' + message)
         if (!settings.allowEmptyMessage && !message) {
             console.warn(`Recorder: Empty Message exiting.`);
             if (!apiResponseMessage) {
                 setFirstUse(true);
-            };
+            }
             return;
         } else {
             console.warn('Recorder: Allowed Empty Message')
-        };
+        }
         setWaitingApi(true);
-        let apiResponse = await queryApi(overideApiUrl, message, localChatId);
+        if (!chatIdRegex.test(settings.chatId)) {
+            const a = crypto.randomUUID();
+            console.warn('Recorder: Found Invalid Chat Id, ', settings.chatId, '. Setting to\n', a);
+            settings.setChatId(a);
+        }
+        const apiResponse = await queryApi(overideApiUrl, message, settings.chatId);
         setWaitingApi(false)
         await processApiResponse(apiResponse);
-        setMessage('');
         return;
     };
 
@@ -103,10 +97,9 @@ export const Recorder = () => {
                     </> :
                     <> {firstUse ? <p>click to start.</p> : null}</>}
                 <div style={{ maxWidth: '400px', margin: '0 auto' }}>
-                    {waitingApi ? <p><StatusThinking /></p> : apiResponseMessage ? <p>{apiResponseMessage}</p> : null}
+                    {waitingApi ? <p><StatusThinking /></p> : apiResponseMessage ? !isWriting ? (<p dangerouslySetInnerHTML={{ __html: apiResponseMessage }} ></p>) : null : null}
                 </div>
-            </div>
-            <div>Chat Id: {localChatId}</div>
+            </div >
         </>
     )
 }

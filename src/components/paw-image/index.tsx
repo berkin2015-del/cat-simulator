@@ -26,7 +26,7 @@ export const PawImage = (props: PawImageProps) => {
     }, [props.spinning]);
 
     useEffect(() => {
-        console.log(`PawImage: ${pawImageSpinning ? '' : 'not '}spinning`);
+        console.debug(`PawImage: ${pawImageSpinning ? '' : 'not '}spinning`);
         if (pawImageSpinning) {
             if (!pawImageClasses.includes(pawSpinClassName)) {
                 setPawImageClasses([...pawImageClasses, pawSpinClassName])

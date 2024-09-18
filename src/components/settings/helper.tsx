@@ -4,7 +4,7 @@ export interface settingSetterProps {
 };
 
 export const settingSetter = (props: settingSetterProps) => {
-    console.log(`Settings: Set ${props.name} in localstorage to\nValue: ${props.newValue}`);
+    console.debug(`Settings: Set ${props.name} in localstorage to\nValue: ${props.newValue}`);
     localStorage.setItem(props.name, props.newValue)
 };
 
@@ -15,9 +15,9 @@ export interface settingGetterProps {
 
 export const settingGetter = (props: settingGetterProps) => {
     let storedValue = localStorage.getItem(props.name);
-    console.log(`Settings: Get ${props.name} from localstorage\nValue: ${storedValue}`);
+    console.debug(`Settings: Get ${props.name} from localstorage\nValue: ${storedValue}`);
     if (storedValue === null) {
-        console.log(`Settings: Got null from ${props.name} in localstorage\ndefaulting value to ${props.defaultValue} in localStorage`);
+        console.warn(`Settings: Got null from ${props.name} in localstorage\ndefaulting value to ${props.defaultValue} in localStorage`);
         settingSetter({
             name: props.name,
             newValue: props.defaultValue,
