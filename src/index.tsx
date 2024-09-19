@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 import { Recorder } from './pages/recorder';
+import { Chat } from './pages/chat'
 import { Settings } from './pages/settings';
 import { PageSelector } from './components/page-selector';
 
@@ -17,6 +18,7 @@ root.render(
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Recorder />} />
+        <Route path="/chat" element={<Chat />} />
         <Route path="/settings" element={<Settings />} />
       </Routes>
     </BrowserRouter>

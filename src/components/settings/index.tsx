@@ -28,16 +28,29 @@ export const setAllowEmptyMessage = (value: boolean) => {
     });
 };
 
+const chatIdRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
-export const getChatId = () => {
-    return settingGetter({
-        name: 'chat_id',
-        defaultValue: crypto.randomUUID(),
-    })
-};
 export const setChatId = (value: string) => {
+    if (!chatIdRegex.test(value)) {
+        console.log('Settins: Invalid ChatId try to set. Skipping\n', value)
+        return;
+    }
     settingSetter({
         name: 'chat_id',
         newValue: value,
     });
+};
+
+export const getChatId = () => {
+    let chatId = settingGetter({
+        name: 'chat_id',
+        defaultValue: crypto.randomUUID(),
+    })
+    if (!chatIdRegex.test(chatId)) {
+        let newChatId = crypto.randomUUID();
+        console.warn('Settings: Found Invalid Chat Id, ', chatId, '. Setting to\n', newChatId);
+        setChatId(newChatId);
+        return newChatId;
+    }
+    return chatId;
 };

@@ -1,4 +1,4 @@
-import { fetchApi } from "../api";
+import { fetchApi } from ".";
 
 
 export const queryApi = async (overideApiUrl: string, message: string, chatId: string) => {
@@ -24,3 +24,23 @@ export const queryApi = async (overideApiUrl: string, message: string, chatId: s
     }
     return response;
 };
+
+interface getChatLogsProps {
+    chatId: string
+}
+export const getChatLogs = async (props: getChatLogsProps) => {
+    let response = await fetchApi('chat/export', {
+        method: 'POST',
+        headers: { "Content-Type": "application/json", },
+        body: JSON.stringify({ chatId: props.chatId }),
+    });
+    if (response === null) {
+        console.error('Recorder: Error Empty Api Response');
+        return [{
+            message: 'Meow! ~',
+            role: 'Meow',
+            timestamp: new Date().toLocaleDateString()
+        }];
+    }
+    return response;
+}

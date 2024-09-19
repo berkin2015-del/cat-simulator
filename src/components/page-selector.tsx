@@ -6,6 +6,7 @@ export const PageSelector = () => {
     const pagePaths: Record<string, string> = {
         home: '/',
         settings: '/settings',
+        chat: '/chat',
         '-': '/'
     };
 

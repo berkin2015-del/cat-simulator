@@ -3,11 +3,9 @@ import { useSearchParams } from "react-router-dom";
 
 import * as settings from "../components/settings"
 import { PawImage } from "../components/paw-image";
-import { StatusThinking } from "../components/recorder/status";
+import { StatusThinking } from "../components/api/status";
 import { playAudio } from "../components/audio-processer";
-import { queryApi } from "../components/recorder";
-
-const chatIdRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+import { queryApi } from "../components/api/actions";
 
 export const Recorder = () => {
 
@@ -60,11 +58,6 @@ export const Recorder = () => {
             console.warn('Recorder: Allowed Empty Message')
         }
         setWaitingApi(true);
-        if (!chatIdRegex.test(settings.getChatId())) {
-            const newChatId = crypto.randomUUID();
-            console.warn('Recorder: Found Invalid Chat Id, ', settings.getChatId(), '. Setting to\n', newChatId);
-            await settings.setChatId(newChatId);
-        }
         const apiResponse = await queryApi(overideApiUrl, message, settings.getChatId());
         setWaitingApi(false);
         await processApiResponse(apiResponse);

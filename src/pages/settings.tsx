@@ -10,8 +10,7 @@ export const Settings = () => {
 		<div className="place-h-center">
 			<h2>Settings</h2>
 			<table className="settings-table">
-				<thead><tr><td>Property</td><td>Value</td><td>Action</td></tr>
-				</thead>
+				<thead><tr><td>Property</td><td>Value</td><td>Action</td></tr></thead>
 				<tbody>
 					<Settings_ApiUrl />
 					<Settings_AllowEmptyMessage />
