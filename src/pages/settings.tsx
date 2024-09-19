@@ -1,6 +1,7 @@
 import { Settings_ApiUrl } from "../components/settings/api-url";
 import { Settings_AllowEmptyMessage } from "../components/settings/allow-empty-message";
 import { Settings_ChatId } from "../components/settings/chat-id";
+import { Settings_CatMode } from "../components/settings/cat-mode";
 
 import '../styles/settings.css';
 
@@ -15,6 +16,7 @@ export const Settings = () => {
 					<Settings_ApiUrl />
 					<Settings_AllowEmptyMessage />
 					<Settings_ChatId />
+					<Settings_CatMode />
 				</tbody>
 			</table>
 			<div style={{ marginTop: '2vh' }} />

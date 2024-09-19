@@ -1,9 +1,15 @@
+import { getCatMode } from "../settings";
+
 export const playAudio = async (trackId: string) => {
     try {
         if (!trackId) {
             console.warn("Audio Processer: Got Empty Track Id - Skipped");
             return;
         };
+        if (!getCatMode()) {
+            console.warn("Audio Processer: Cat Mode set to false - Skipped");
+            return;
+        }
         const audio = new Audio(require(`./sounds/${trackId}.mp3`));
         await new Promise<void>((resolve, reject) => {
             audio.play().then(() => {

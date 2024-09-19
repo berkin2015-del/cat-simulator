@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getChatId } from "../components/settings";
+import { getCatMode, getChatId } from "../components/settings";
 import { getChatLogs, queryApi } from "../components/api/actions";
 import { StatusLoading, StatusThinking } from "../components/api/status";
 
@@ -25,7 +25,7 @@ export const Chat = () => {
         let newChatLog = [...chatLog, {
             timestamp: initMsgTime,
             role: 'human',
-            text: message,
+            text: message ? message : getCatMode() ? 'meow' : 'hi',
         }, {
             timestamp: initMsgTime,
             role: 'assistant',
@@ -78,7 +78,6 @@ export const Chat = () => {
 
     return (<>
         <div className="place-h-center">
-            <h2>Chat</h2>
             {waitingApi ? <StatusLoading /> :
                 <>
                     <table className="settings-table" style={{ maxWidth: "90vw", textAlign: 'left', marginBottom: '1em' }}>
@@ -87,7 +86,7 @@ export const Chat = () => {
                             {chatLog.map((r, index) => (
                                 <tr key={index}>
                                     <td>{new Date(r.timestamp * 1000).toLocaleString()}</td>
-                                    <td>{r.role === 'assistant' ? 'meow' : 'human'}</td>
+                                    <td>{r.role === 'assistant' ? getCatMode() ? 'meow' : 'assistant' : getCatMode() ? 'human' : 'user'}</td>
                                     <td>{typeof r.text === 'string' ? <span dangerouslySetInnerHTML={{ __html: r.text }}></span> : r.text}</td>
                                 </tr>
                             ))}

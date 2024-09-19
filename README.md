@@ -31,8 +31,6 @@ aws cloudfront create-invalidation --distribution-id $DIST_ID --paths '/index.ht
 
 ## TODO:
 - Merge Assistant and User Chat to one Dynamo DB Record
-- Add Chat Export to API
-- Fix semi broken api dynamo DB Calls
 - Look into streamming data instead of static whole push
 - Add User Functionality
 - Add User/Chat pair

@@ -32,8 +32,8 @@ export const handler = async (event) => {
 
         // Call Bedrock for response
         // bedrock doesn't allow empty message, don't know why it worked before but not now
-        const bedrockUserMessage = userMessagify(requestBody.message || 'meow')
-        const bedrockResponsd = await invokeBedrock(bedrockUserMessage, pastMessages);
+        const bedrockUserMessage = userMessagify(requestBody.message ? requestBody.message : requestBody.catMode === 'false' ? 'hi' : 'meow')
+        const bedrockResponsd = await invokeBedrock(bedrockUserMessage, pastMessages, requestBody.catMode === 'false' ? false : true);
         const bedrockOutput = bedrockResponsd.message.content[0].toolUse.input;
 
         const bedrockResponseAssistantMessage = {

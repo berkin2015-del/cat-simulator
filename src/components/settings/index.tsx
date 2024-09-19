@@ -54,3 +54,16 @@ export const getChatId = () => {
     }
     return chatId;
 };
+
+export const getCatMode = () => {
+    return settingGetter({
+        name: 'cat_mode',
+        defaultValue: 'true',
+    }) === 'true'
+};
+export const setCatMode = (value: boolean) => {
+    settingSetter({
+        name: 'cat_mode',
+        newValue: value.toString(),
+    });
+};

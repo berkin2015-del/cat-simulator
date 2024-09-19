@@ -1,11 +1,12 @@
 import { fetchApi } from ".";
+import { getCatMode } from "../settings";
 
 
 export const queryApi = async (overideApiUrl: string, message: string, chatId: string) => {
     let response = await fetchApi('chat', {
         method: 'POST',
         headers: { "Content-Type": "application/json", },
-        body: JSON.stringify({ message: message, chatId: chatId }),
+        body: JSON.stringify({ message: message, chatId: chatId, catMode: getCatMode().toString() }),
     }, overideApiUrl);
     if (response === null) {
         console.error('Recorder: Error Empty Api Response');
