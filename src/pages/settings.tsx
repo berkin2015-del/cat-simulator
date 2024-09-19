@@ -2,7 +2,7 @@ import { Settings_ApiUrl } from "../components/settings/api-url";
 import { Settings_AllowEmptyMessage } from "../components/settings/allow-empty-message";
 import { Settings_ChatId } from "../components/settings/chat-id";
 
-import './settings.css';
+import '../styles/settings.css';
 
 export const Settings = () => {
 

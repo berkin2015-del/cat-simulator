@@ -7,7 +7,7 @@ import { Chat } from './pages/chat'
 import { Settings } from './pages/settings';
 import { PageSelector } from './components/page-selector';
 
-import './index.css';
+import './styles/index.css';
 
 export const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement

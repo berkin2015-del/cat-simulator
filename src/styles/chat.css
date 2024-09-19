@@ -1,0 +1,9 @@
+.send_message_box textarea {
+    display: block;
+    margin: auto;
+}
+
+.send_message_box button {
+    margin: auto;
+    display: block;
+}
