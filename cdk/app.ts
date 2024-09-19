@@ -31,7 +31,7 @@ const chatTable = new cdk.aws_dynamodb.Table(catSimStore, 'Chat Table', {
         name: 'timestamp',
         type: cdk.aws_dynamodb.AttributeType.NUMBER
     },
-    timeToLiveAttribute: 'TTL',
+    timeToLiveAttribute: 'ttl',
     deletionProtection: true,
     billingMode: cdk.aws_dynamodb.BillingMode.PROVISIONED,
     removalPolicy: cdk.RemovalPolicy.DESTROY,
@@ -119,24 +119,49 @@ new cdk.aws_logs.LogGroup(catSimApi, 'Api LogGroup', {
     removalPolicy: cdk.RemovalPolicy.DESTROY,
 });
 
+const apiChatExportFunction = new cdk.aws_lambda.Function(catSimApi, 'Api Export Function', {
+    runtime: cdk.aws_lambda.Runtime.NODEJS_20_X,
+    code: cdk.aws_lambda.Code.fromAsset(path.join(__dirname, './api-export-lambda')),
+    handler: 'index.handler',
+    timeout: cdk.Duration.seconds(30),
+    environment: {
+        CHAT_TABLE_NAME: chatTable.tableName,
+    },
+});
+
+apiChatExportFunction.role?.attachInlinePolicy(new cdk.aws_iam.Policy(catSimApi, 'Dynamo DB policy for api export', {
+    statements: [new cdk.aws_iam.PolicyStatement({
+        effect: cdk.aws_iam.Effect.ALLOW,
+        actions: ["dynamodb:Query"],
+        resources: [chatTable.tableArn],
+    }),],
+}));
+
+new cdk.aws_logs.LogGroup(catSimApi, 'Api Export LogGroup', {
+    logGroupName: `/aws/lambda/${apiChatExportFunction.functionName}`,
+    retention: cdk.aws_logs.RetentionDays.ONE_DAY,
+    removalPolicy: cdk.RemovalPolicy.DESTROY,
+});
+
+const DEFAULT_API_CORS = {
+    allowOrigins: ['*'],
+    allowMethods: ['POST', 'OPTIONS'],
+    allowHeaders: ['Content-Type', 'X-Amz-Date', 'Authorization', 'X-Api-Key', 'X-Amz-Security-Token'],
+}
 const api = new cdk.aws_apigateway.RestApi(catSimApi, 'Api for cat sim');
 const apiRoot = api.root.addResource('api');
 const apiChat = apiRoot.addResource('chat', {
-    defaultCorsPreflightOptions: {
-        allowOrigins: ['*'],
-        allowMethods: ['POST', 'OPTIONS'],
-        allowHeaders: ['Content-Type', 'X-Amz-Date', 'Authorization', 'X-Api-Key', 'X-Amz-Security-Token'],
-    },
+    defaultCorsPreflightOptions: DEFAULT_API_CORS,
 });
-apiChat.addMethod('ANY', new cdk.aws_apigateway.LambdaIntegration(apiChatFunction));
+apiChat.addMethod('POST', new cdk.aws_apigateway.LambdaIntegration(apiChatFunction));
+const apiChatExport = apiChat.addResource('export', {
+    defaultCorsPreflightOptions: DEFAULT_API_CORS,
+});
+apiChatExport.addMethod('POST', new cdk.aws_apigateway.LambdaIntegration(apiChatExportFunction));
 const apiUserAuth = apiRoot.addResource('auth', {
-    defaultCorsPreflightOptions: {
-        allowOrigins: ['*'],
-        allowMethods: ['POST', 'OPTIONS'],
-        allowHeaders: ['Content-Type', 'X-Amz-Date', 'Authorization', 'X-Api-Key', 'X-Amz-Security-Token'],
-    },
+    defaultCorsPreflightOptions: DEFAULT_API_CORS,
 });
-apiUserAuth.addMethod('ANY', new cdk.aws_apigateway.LambdaIntegration(apiAuthFunction));
+apiUserAuth.addMethod('POST', new cdk.aws_apigateway.LambdaIntegration(apiAuthFunction));
 
 const dist = new cdk.aws_cloudfront.Distribution(catSimInterface, "Distribution for Site", {
     defaultRootObject: 'index.html',
