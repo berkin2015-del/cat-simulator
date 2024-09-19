@@ -4,6 +4,7 @@ import { getChatLogs } from "../components/api/actions";
 import { StatusLoading } from "../components/api/status";
 
 import '../styles/chat.css'
+import { json } from "stream/consumers";
 
 interface ChatLog {
     timestamp: number,
@@ -24,13 +25,29 @@ export const Chat = () => {
     }
 
     useEffect(() => {
-        setChatLog([]);
-        let logs = getChatLogs({ chatId: chatId });
-        logs.then((l) => {
-            setChatLog(l);
-            setWaitingApi(false)
-        });
-    }, [chatId]);
+        const funcBoo = async () => {
+            const cachedChatLog = localStorage.getItem(`chat_logs_${chatId}`);
+            try {
+                if (cachedChatLog) {
+                    setChatLog(JSON.parse(cachedChatLog));
+                } else {
+                    let logs = await getChatLogs({ chatId: chatId });
+                    setChatLog(logs);
+                    localStorage.setItem(`chat_logs_${chatId}`, JSON.stringify(logs));
+                    setWaitingApi(false);
+                }
+            } catch (error) {
+                console.error(error);
+                console.warn('Dumping Cached Chat Logs');
+                localStorage.removeItem(`chat_logs_${chatId}`);
+                let logs = await getChatLogs({ chatId: chatId });
+                setChatLog(logs);
+                localStorage.setItem(`chat_logs_${chatId}`, JSON.stringify(logs));
+                setWaitingApi(false);
+            };
+        };
+        funcBoo();
+    }, []);
 
     return (<>
         <div className="place-h-center">
@@ -40,15 +57,13 @@ export const Chat = () => {
                     <table className="settings-table" style={{ maxWidth: "90vw", textAlign: 'left', marginBottom: '1em' }}>
                         <thead><tr><td>TimeStamp</td><td>Sender</td><td>Message</td></tr></thead>
                         <tbody>
-                            {
-                                chatLog.map((r, index) => (
-                                    <tr key={index}>
-                                        <td>{new Date(r.timestamp * 1000).toLocaleString()}</td>
-                                        <td>{r.role}</td>
-                                        <td>{r.text}</td>
-                                    </tr>
-                                ))
-                            }
+                            {chatLog.map((r, index) => (
+                                <tr key={index}>
+                                    <td>{new Date(r.timestamp * 1000).toLocaleString()}</td>
+                                    <td>{r.role}</td>
+                                    <td>{r.text}</td>
+                                </tr>
+                            ))}
                         </tbody>
                     </table>
                     <div className="send_message_box ">
