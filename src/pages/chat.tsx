@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { getCatMode, getChatId } from "../components/settings";
 import { getChatLogs, queryApi } from "../components/api/actions";
 import { StatusLoading, StatusThinking } from "../components/api/status";
+import { playAudio } from '../components/audio-processer'
 
 import '../styles/chat.css'
 
@@ -44,6 +45,11 @@ export const Chat = () => {
         setChatLog(updatedChatLog);
         localStorage.setItem(`chat_logs_${chatId}`, JSON.stringify(updatedChatLog));
         setMessage('');
+        if (getCatMode()) {
+            for (const trackId of apiResponse.soundtracks) {
+                await playAudio(trackId);
+            }
+        }
     }
 
     useEffect(() => {
