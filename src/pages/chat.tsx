@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getCatMode, getChatId } from "../components/settings";
 import { getChatLogs, queryApi } from "../components/api/actions";
 import { StatusLoading, StatusThinking } from "../components/api/status";
@@ -15,10 +15,11 @@ interface ChatLogItems {
 
 export const Chat = () => {
 
-    const chatId = getChatId();
+    const chatId: string = getChatId();
     const [chatLog, setChatLog] = useState<ChatLogItems[]>([]);
-    const [waitingApi, setWaitingApi] = useState(true);
-    const [message, setMessage] = useState('');
+    const [waitingApi, setWaitingApi] = useState<boolean>(true);
+    const [message, setMessage] = useState<string>('');
+    const chatLogRef = useRef<HTMLDivElement>(null);
 
     const handleSendMessage = async () => {
         const initMsgTime = Math.floor(new Date().getTime() / 1000)
@@ -32,13 +33,8 @@ export const Chat = () => {
             text: <StatusThinking />,
         }]
         setChatLog(newChatLog);
-        sendApiRequest(message, newChatLog);
-        setMessage('');
         localStorage.removeItem(`chat_logs_${chatId}`);
-    }
-
-    const sendApiRequest = async (msg: string, newChatLog: ChatLogItems[]) => {
-        const apiResponse = await queryApi('', msg, chatId);
+        const apiResponse = await queryApi('', message, chatId);
         const updatedChatLog = newChatLog.map((item, index) => {
             if (index === newChatLog.length - 1) {
                 return { ...item, text: apiResponse.message };
@@ -47,8 +43,8 @@ export const Chat = () => {
         });
         setChatLog(updatedChatLog);
         localStorage.setItem(`chat_logs_${chatId}`, JSON.stringify(updatedChatLog));
+        setMessage('');
     }
-
 
     useEffect(() => {
         const funcBoo = async () => {
@@ -76,22 +72,30 @@ export const Chat = () => {
         funcBoo();
     }, []);
 
+    useEffect(() => {
+        chatLogRef.current ? chatLogRef.current.scrollTop = chatLogRef.current.scrollHeight : null
+    }, [chatLog])
+
     return (<>
         <div className="place-h-center">
             {waitingApi ? <StatusLoading /> :
                 <>
-                    <table className="settings-table" style={{ maxWidth: "90vw", textAlign: 'left', marginBottom: '1em' }}>
-                        <thead><tr><td>TimeStamp</td><td>Sender</td><td>Message</td></tr></thead>
-                        <tbody>
-                            {chatLog.map((r, index) => (
-                                <tr key={index}>
-                                    <td>{new Date(r.timestamp * 1000).toLocaleString()}</td>
-                                    <td>{r.role === 'assistant' ? getCatMode() ? 'meow' : 'assistant' : getCatMode() ? 'human' : 'user'}</td>
-                                    <td>{typeof r.text === 'string' ? <span dangerouslySetInnerHTML={{ __html: r.text }}></span> : r.text}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                    {chatLog ?
+                        <div className="chat-log-conatiner" ref={chatLogRef}>
+                            <table className="settings-table">
+                                <thead><tr><td>TimeStamp</td><td>Sender</td><td>Message</td></tr></thead>
+                                <tbody>
+                                    {chatLog.map((r, index) => (
+                                        <tr key={index}>
+                                            <td>{new Date(r.timestamp * 1000).toLocaleString()}</td>
+                                            <td>{r.role === 'assistant' ? getCatMode() ? 'meow' : 'assistant' : getCatMode() ? 'human' : 'user'}</td>
+                                            <td>{typeof r.text === 'string' ? <span>{r.text}</span> : r.text}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                        : null}
                     <div className="send_message_box ">
                         <textarea
                             name="message"
@@ -105,6 +109,6 @@ export const Chat = () => {
                     </div>
                 </>
             }
-        </div>
+        </div >
     </>);
 }
