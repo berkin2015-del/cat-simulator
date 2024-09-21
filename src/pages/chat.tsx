@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from "react";
-import { getCatMode, getChatId } from "../components/settings";
+import { ReactNode } from "react";
+import { useSearchParams } from "react-router-dom";
+import { getCatMode, getChatId, setCatMode } from "../components/settings";
 import { getChatLogs, queryApi } from "../components/api/actions";
 import { StatusLoading, StatusThinking } from "../components/api/status";
 import { playAudio } from '../components/audio-processer'
 
 import '../styles/chat.css'
 
-import { ReactNode } from "react";
 
 interface ChatLogItems {
     timestamp: number,
@@ -17,17 +18,23 @@ interface ChatLogItems {
 export const Chat = () => {
 
     const chatId: string = getChatId();
+    const catMode = getCatMode();
     const [chatLog, setChatLog] = useState<ChatLogItems[]>([]);
     const [waitingApi, setWaitingApi] = useState<boolean>(true);
     const [message, setMessage] = useState<string>('');
     const chatLogRef = useRef<HTMLDivElement>(null);
+    const [searchParams, setSearchParams] = useSearchParams();
 
     const handleSendMessage = async () => {
+        if (!message) {
+            alert('Cannot Send Empty Message');
+            return;
+        }
         const initMsgTime = Math.floor(new Date().getTime() / 1000)
         let newChatLog = [...chatLog, {
             timestamp: initMsgTime,
             role: 'human',
-            text: message ? message : getCatMode() ? 'meow' : 'hi',
+            text: message ? message : catMode ? 'meow' : 'hi',
         }, {
             timestamp: initMsgTime,
             role: 'assistant',
@@ -35,7 +42,8 @@ export const Chat = () => {
         }]
         setChatLog(newChatLog);
         localStorage.removeItem(`chat_logs_${chatId}`);
-        const apiResponse = await queryApi('', message, chatId);
+        console.debug('Chat: Sending Message\n', message, '\nWith cat_mode\n', catMode, '\non chat\n', chatId);
+        const apiResponse = await queryApi('', message, chatId, catMode);
         const updatedChatLog = newChatLog.map((item, index) => {
             if (index === newChatLog.length - 1) {
                 return { ...item, text: apiResponse.message };
@@ -45,7 +53,7 @@ export const Chat = () => {
         setChatLog(updatedChatLog);
         localStorage.setItem(`chat_logs_${chatId}`, JSON.stringify(updatedChatLog));
         setMessage('');
-        if (getCatMode()) {
+        if (catMode) {
             for (const trackId of apiResponse.soundtracks) {
                 await playAudio(trackId);
             }
@@ -75,6 +83,14 @@ export const Chat = () => {
                 setWaitingApi(false);
             };
         };
+        const overideCatMode = searchParams.get('cat');
+        if (overideCatMode === 'no') {
+            console.log('Chat: Overiding Cat Mode to false')
+            setCatMode(false)
+        } else if (overideCatMode === 'yes') {
+            console.log('Chat: Overiding Cat Mode to true')
+            setCatMode(true)
+        }
         funcBoo();
     }, []);
 
@@ -94,8 +110,15 @@ export const Chat = () => {
                                     {chatLog.map((r, index) => (
                                         <tr key={index}>
                                             <td>{new Date(r.timestamp * 1000).toLocaleString()}</td>
-                                            <td>{r.role === 'assistant' ? getCatMode() ? 'meow' : 'assistant' : getCatMode() ? 'human' : 'user'}</td>
-                                            <td>{typeof r.text === 'string' ? <span>{r.text}</span> : r.text}</td>
+                                            <td>{r.role === 'assistant' ? catMode ? 'meow' : 'assistant' : catMode ? 'human' : 'user'}</td>
+                                            <td>{typeof r.text === 'string' ?
+                                                r.text.split("\n").map((item, idx) => (
+                                                    <span key={idx}>
+                                                        {item.replace(/ /g, "\u00A0")}
+                                                        <br />
+                                                    </span>
+                                                ))
+                                                : r.text}</td>
                                         </tr>
                                     ))}
                                 </tbody>

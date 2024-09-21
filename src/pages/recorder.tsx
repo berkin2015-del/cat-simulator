@@ -23,6 +23,14 @@ export const Recorder = () => {
             console.warn("Recorder: Found api url in query strings\n" + queryStringApiUrl + '\n Overiding localStorage');
             setOverideApiUrl(queryStringApiUrl);
         }
+        const overideCatMode = searchParams.get('cat');
+        if (overideCatMode === 'no') {
+            console.log('Chat: Overiding Cat Mode to false')
+            settings.setCatMode(false)
+        } else if (overideCatMode === 'yes') {
+            console.log('Chat: Overiding Cat Mode to true')
+            settings.setCatMode(true)
+        }
     }, []);
 
     const processApiResponse = async (response: {
@@ -58,6 +66,7 @@ export const Recorder = () => {
             console.warn('Recorder: Allowed Empty Message')
         }
         setWaitingApi(true);
+        localStorage.removeItem(`chat_logs_${settings.getChatId()}`)
         const apiResponse = await queryApi(overideApiUrl, message, settings.getChatId());
         setWaitingApi(false);
         await processApiResponse(apiResponse);

@@ -2,11 +2,15 @@ import { fetchApi } from ".";
 import { getCatMode } from "../settings";
 
 
-export const queryApi = async (overideApiUrl: string, message: string, chatId: string) => {
+export const queryApi = async (overideApiUrl: string, message: string, chatId: string, catMode?: boolean) => {
     let response = await fetchApi('chat', {
         method: 'POST',
         headers: { "Content-Type": "application/json", },
-        body: JSON.stringify({ message: message, chatId: chatId, catMode: getCatMode().toString() }),
+        body: JSON.stringify({
+            message: message,
+            chatId: chatId,
+            catMode: catMode === undefined ? getCatMode().toString() : catMode.toString(),
+        }),
     }, overideApiUrl);
     if (response === null) {
         console.error('Recorder: Error Empty Api Response');
@@ -38,9 +42,9 @@ export const getChatLogs = async (props: getChatLogsProps) => {
     if (response === null) {
         console.error('Recorder: Error Empty Api Response');
         return [{
-            message: 'Meow! ~',
-            role: 'Meow',
-            timestamp: new Date().toLocaleDateString()
+            text: 'Error getting Chat Log for chat\n'+ props.chatId,
+            role: 'assistant',
+            timestamp: Math.floor((new Date()).getTime() / 1000)
         }];
     }
     return response;

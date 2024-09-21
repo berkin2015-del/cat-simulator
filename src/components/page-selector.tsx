@@ -4,22 +4,23 @@ export const PageSelector = () => {
     const [currentPage, setCurrentPage] = useState('');
 
     const pagePaths: Record<string, string> = {
-        home: '/',
-        settings: '/settings',
-        chat: '/chat',
-        '-': '/'
+        home: window.location.origin + '/',
+        settings: window.location.origin + '/settings',
+        chat: window.location.origin + '/chat',
+        source: 'https://github.com/ltekme/cat-simulator/',
+        '-': window.location.origin + '/'
     };
 
     useEffect(() => {
-        const currentPath = window.location.pathname;
+        const currentPath = window.location.href;
         const currentPage = Object.keys(pagePaths).find(key => pagePaths[key] === currentPath) || '-';
         setCurrentPage(currentPage);
-    }, [window.location.pathname]);
+    }, [window.location.href]);
 
     const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const selectedPage = e.target.value;
         setCurrentPage(selectedPage);
-        window.location.pathname = pagePaths[selectedPage];
+        window.location.href = pagePaths[selectedPage];
     };
 
     return (
