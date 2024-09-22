@@ -102,7 +102,7 @@ export const Chat = () => {
         <div className="place-h-center">
             {waitingApi ? <StatusLoading /> :
                 <>
-                    {chatLog ?
+                    {chatLog.length !== 0 ?
                         <div className="chat-log-conatiner" ref={chatLogRef}>
                             <table className="settings-table">
                                 <thead><tr><td>TimeStamp</td><td>Sender</td><td>Message</td></tr></thead>
@@ -114,7 +114,7 @@ export const Chat = () => {
                                             <td>{typeof r.text === 'string' ?
                                                 r.text.split("\n").map((item, idx) => (
                                                     <span key={idx}>
-                                                        {item.replace(/ /g, "\u00A0")}
+                                                        {item}
                                                         <br />
                                                     </span>
                                                 ))
@@ -124,7 +124,7 @@ export const Chat = () => {
                                 </tbody>
                             </table>
                         </div>
-                        : null}
+                        : <></>}
                     <div className="send_message_box ">
                         <textarea
                             name="message"

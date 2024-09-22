@@ -9,16 +9,17 @@
 }
 
 .chat-log-conatiner {
-    width: 90vw;
-    height: 75vh;
+    max-width: 90vw;
+    max-height: 75vh;
     margin-left: auto;
     margin-right: auto;
-    overflow-x: scroll;
+    overflow-x: auto;
     overflow-y: scroll;
     -ms-overflow-style: none;
     text-align: left;
     margin-bottom: 1em;
 }
+
 
 .chat-log-conatiner::-webkit-scrollbar {
     display: none;
